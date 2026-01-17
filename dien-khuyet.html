@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Luyện Reading — 20 Bài Cloze Test</title>
+<style>
+/* --- 1. CẤU HÌNH MÀU SẮC (Dark Mode mặc định) --- */
+:root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --correct: #10b981; /* Xanh lá */
+    --wrong: #ef4444;   /* Đỏ */
+    --selected-bg: rgba(59, 130, 246, 0.2);
+    --selected-border: #3b82f6;
+}
+
+/* Light Mode */
+.light {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --selected-bg: #e0f2fe;
+    --selected-border: #0ea5e9;
+}
+
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 18px;
+    font-size: 18px;
+    transition: background 0.3s, color 0.3s;
+    line-height: 1.5;
+}
+.wrap { max-width: 900px; margin: 0 auto; }
+
+/* --- 2. HEADER --- */
+header {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    margin-bottom: 25px; padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+h1 { margin: 0; font-size: 22px; flex: 1; color: var(--accent); }
+.controls { display: flex; gap: 8px; align-items: center; }
+
+.btn {
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--card); color: var(--text);
+    font-size: 16px; font-weight: 600; transition: 0.2s;
+}
+.btn:hover { background: var(--accent); color: #fff; border-color: transparent; }
+.btn.secondary { background: transparent; border: 1px solid var(--muted); color: var(--muted); }
+.btn.secondary:hover { border-color: var(--text); color: var(--text); }
+
+/* --- 3. MENU CHỌN BÀI --- */
+#menuSection .intro { margin-bottom: 15px; color: var(--muted); font-size: 16px; }
+.menu-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;
+}
+.menu-item {
+    padding: 16px; border-radius: 10px; background: var(--card);
+    border: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer; text-align: left; transition: 0.2s;
+    display: flex; align-items: center; gap: 12px;
+}
+.menu-item:hover {
+    border-color: var(--accent); transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.menu-item .badge {
+    background: var(--accent); color: #fff; padding: 4px 8px;
+    border-radius: 6px; font-size: 14px; font-weight: bold; min-width: 60px; text-align: center;
+}
+
+/* --- 4. PHẦN BÀI TẬP --- */
+.card {
+    background: var(--card); padding: 24px; border-radius: 12px;
+    margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.passage {
+    line-height: 1.8; white-space: pre-line;
+    font-family: Georgia, serif; font-size: 1.05em; color: var(--text);
+}
+.passage strong { color: var(--accent); }
+
+.question { margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+.qtext { font-weight: 700; margin-bottom: 12px; color: var(--accent); display: inline-block; }
+
+/* --- 5. CÁC PHƯƠNG ÁN --- */
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width: 600px) { .options { grid-template-columns: 1fr; } }
+
+.opt {
+    padding: 14px; border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 8px; cursor: pointer; background: transparent;
+    text-align: left; color: var(--text); transition: 0.2s; font-size: 16px;
+}
+.opt:hover:not(:disabled) { border-color: var(--muted); }
+
+/* --- TRẠNG THÁI NÚT --- */
+/* Khi người dùng chọn (chưa nộp) */
+.opt.selected {
+    background: var(--selected-bg);
+    border-color: var(--selected-border);
+    font-weight: bold;
+}
+
+/* Sau khi chấm điểm */
+.opt.correct {
+    background: var(--correct) !important;
+    border-color: var(--correct) !important;
+    color: #fff !important;
+}
+.opt.wrong {
+    background: var(--wrong) !important;
+    border-color: var(--wrong) !important;
+    color: #fff !important;
+    opacity: 0.8;
+}
+/* Đáp án đúng bị bỏ lỡ */
+.opt.show-missed-correct {
+    border: 2px dashed var(--correct);
+    color: var(--correct);
+    font-weight: bold;
+    position: relative;
+}
+.opt.show-missed-correct::after {
+    content: "✔ ĐÁP ÁN ĐÚNG";
+    position: absolute; right: 10px; font-size: 12px; top: 50%; transform: translateY(-50%);
+}
+
+/* --- KẾT QUẢ --- */
+#result {
+    margin-top: 30px; padding: 25px; border-radius: 12px;
+    background: var(--card); border: 2px solid var(--accent);
+    text-align: center; display: none; animation: fadeIn 0.5s;
+}
+#result .score { font-size: 28px; font-weight: bold; margin-bottom: 10px; color: var(--accent); }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Reading Cloze Practice</h1>
+    <div class="controls">
+      <select id="fontSize" class="btn secondary">
+        <option value="16">Cỡ chữ: Nhỏ</option>
+        <option value="18" selected>Vừa</option>
+        <option value="20">Lớn</option>
+        <option value="22">Rất lớn</option>
+      </select>
+      <button id="modeBtn" class="btn">🌙</button>
+      <button id="backMenu" class="btn hidden">🔙 Menu</button>
+    </div>
+  </header>
+
+  <section id="menuSection">
+    <div class="intro">Danh sách 20 bài luyện tập (Mỗi bài 10 câu hỏi):</div>
+    <div class="menu-grid" id="menu"></div>
+  </section>
+
+  <section id="quizSection" class="hidden"></section>
+
+  <div id="result"></div>
+</div>
+
+<script>
+// --- DỮ LIỆU ĐẦY ĐỦ 20 BÀI ---
+const quizzes = [
+  { title:"THE FIRST WOMAN SCIENTIST",
+    passage:`Hypatia was born in Alexandria, in Egypt, in 370 A.D. For many centuries she was (21) ________ only woman scientist to have a place in the history books.\nHypatia’s father was director of Alexandria University, and he (22) ________ sure his daughter had the best education available. This was unusual, as most women then had few (23) ________ to study.\nAfter studying in Athens and Rome, Hypatia returned to Alexandria (24) ________ she began teaching mathematics. She soon became famous (25) ________ her knowledge of new ideas.\nWe have no copies of her books, (26) ________ we know that she wrote several important mathematical works. Hypatia was also interested in technology and (27) ________ several scientific tools to help with her work.\nAt the (28) ________ many rulers were afraid of science, and (29) ________ connected with it was in danger. One day in March 415, Hypatia (30) ________ attacked in the street and killed.`,
+    q:[
+      {no:21, opts:["the","one","a","an"]},
+      {no:22, opts:["made","said","could","put"]},
+      {no:23, opts:["opportunities","customs","classes","teachers"]},
+      {no:24, opts:["where","how","there","which"]},
+      {no:25, opts:["for","from","by","in"]},
+      {no:26, opts:["but","because","or","as"]},
+      {no:27, opts:["invented","experimented","did","learnt"]},
+      {no:28, opts:["time","period","year","day"]},
+      {no:29, opts:["anyone","nobody","all","something"]},
+      {no:30, opts:["was","had","has","is"]},
+    ]
+  },
+  { title:"CAMPING",
+    passage:`Although some groups of people have always lived outdoors in tents, camping as we know it today only began to be (21) _______ about 50 years ago. The increase in the use of cars and improvements in camping (22) _______ have allowed more people to travel longer (23) _______ into the countryside and to stay there in greater comfort.\nMany campers like to be (24) _______ themselves in quiet areas, so they (25) _______ their tent and food and walk or cycle into the forests or the mountains. Others, preferring to be near people, drive to a public or privately-owned campsite (26) _______ has up-to-date facilities, (27) _______ hot showers and swimming pools.\nWhether campers are (28) _______ in the mountains or on a busy site, they should remember to (29) _______ the area clean and tidy. In the forests, they must put out any fires and keep food hidden to avoid attracting (30) _______ animals.`,
+    q:[
+      {no:21, opts:["popular","famous","favourite","current"]},
+      {no:22, opts:["equipment","baggage","property","tool"]},
+      {no:23, opts:["distances","ways","directions","voyages"]},
+      {no:24, opts:["by","on","at","of"]},
+      {no:25, opts:["take","make","pick","do"]},
+      {no:26, opts:["which","who","where","when"]},
+      {no:27, opts:["like","such","as","just"]},
+      {no:28, opts:["alone","lonely","single","separate"]},
+      {no:29, opts:["leave","remain","stay","let"]},
+      {no:30, opts:["wild","natural","loose","free"]},
+    ]
+  },
+  { title:"MONEY",
+    passage:`What is money? The pound, the dollar or the euro are actually just like a gram or a kilometer. The difference is that you can exchange money for something (21) ________. A ten pound note may buy a book, a huge bag of sweets, or a (22) ________ of cinema tickets. But the note itself is only a printed (23) ________ of paper which costs almost nothing to make. Thousands of years (24) ________, people didn’t have money as we know (25) ________. There were no banks (26) ________ even shops. In those days, Mr. Green the farmer exchanged the corn he (27) _______ grown for Mr. Hive’s honey. This was an exchange arranged between two (28) ________ each of whom had something that the other wanted. But in time, most societies invented their own ‘currencies’ (29) ________ that people could exchange more. The different currencies began to join together, which is why (30) ________ everyone uses the same currency in their country.`,
+    q:[
+      {no:21, opts:["else","other","another","same"]},
+      {no:22, opts:["couple","double","few","several"]},
+      {no:23, opts:["piece","part","side","slice"]},
+      {no:24, opts:["ago","past","before","since"]},
+      {no:25, opts:["it","them","some","that"]},
+      {no:26, opts:["or","neither","and","but"]},
+      {no:27, opts:["had","was","did","has"]},
+      {no:28, opts:["people","jobs","things","goods"]},
+      {no:29, opts:["so","by","because","for"]},
+      {no:30, opts:["today","tomorrow","recently","soon"]},
+    ]
+  },
+  { title:"LITTLE CAT, LITTLE CAT",
+    passage:`When Bo the cat decided to explore a furniture van, she had a bigger adventure than she expected. She was discovered (21) ________ the driver, after he had completed a (22) _______ of over 500 kilometres. It was (23) ________ end of a long day. The driver and the cat were both hungry! He gave her some milk and started making enquiries. He telephoned his last (24) ________, but they had not lost a cat. It was getting late, so he took Bo home for the night and (25) _______ morning delivered her to an animal hospital.\nThe cat’s owner (26) ________ done some detective work too. After (27) ________ everywhere for the cat, he suddenly remembered the furniture van (28) ________ had made a delivery to a neighbour. Fortunately, he (29) ________ the name of the company. He called their office and in a short time Bo was (30) ________ safely.`,
+    q:[
+      {no:21, opts:["by","from","at","of"]},
+      {no:22, opts:["trip","visit","tour","travel"]},
+      {no:23, opts:["the","some","an","any"]},
+      {no:24, opts:["customers","buyers","callers","shoppers"]},
+      {no:25, opts:["next","following","tomorrow","other"]},
+      {no:26, opts:["had","is","has","was"]},
+      {no:27, opts:["searching","seeing","watching","spying"]},
+      {no:28, opts:["which","this","it","what"]},
+      {no:29, opts:["remembered","thought","saw","reminded"]},
+      {no:30, opts:["returned","brought","given","taken"]},
+    ]
+  },
+  { title:"OPEN UNIVERSITY DEGREE",
+    passage:`Like any other university, the Open University can give you a degree. However, you don’t have to (21) ______ working to study. It can also open up a whole variety (22) _____ interests. If you have (23) ________ studied before, you will enjoy the special, new pleasure of (24) ________ your knowledge. You will make friends of (25) ________ kinds. You may also (26) ________ that your qualification provides new career opportunities. You don’t actually (27) ________ to the Open University for lectures, but study at home, using television, radio and computer software. You can (28) ________ one class a month if you wish at an Open University Centre. Of course, there are exams to take, as in (29) ________ university. If you (30) ________ like to know more, all you have to do is complete the form below. It could be the start of a wonderful new period in your life.`,
+    q:[
+      {no:21, opts:["stop","end","break","leave"]},
+      {no:22, opts:["of","from","in","for"]},
+      {no:23, opts:["never","ever","often","always"]},
+      {no:24, opts:["increasing","changing","growing","adding"]},
+      {no:25, opts:["all","each","both","every"]},
+      {no:26, opts:["find","suggest","wish","want"]},
+      {no:27, opts:["go","join","enter","arrive"]},
+      {no:28, opts:["attend","give","learn","study"]},
+      {no:29, opts:["any","some","many","most"]},
+      {no:30, opts:["would","did","will","can"]},
+    ]
+  },
+  { title:"MAKING HONEY",
+    passage:`Do you like honey? Honey is a product, and it is (21) ________ by honey bees. It has a special sweet flavor that some people prefer (22) ________ ordinary sugar. Sometimes, it is even possible to (23) ________ from the flavour what kind of flowers the bees (24) ________ before producing the honey.\nHave you ever (25) ________ about how honey is produced? Beekeepers – people who look after bees - are very important in the making of honey. They (26) ________ the bees in their care produce (27) ________ honey than is needed. Then the honey can be removed (28) ________ causing problems for the bees.\nHoney collection is an ancient activity, (29) ________ back at least 10,000 years, and honey has (30) ________ increasingly popular nowadays as a healthy food.`,
+    q:[
+      {no:21, opts:["made","make","makes","is making"]},
+      {no:22, opts:["to","at","in","on"]},
+      {no:23, opts:["know","take","inform","answer"]},
+      {no:24, opts:["visited","went","met","passed"]},
+      {no:25, opts:["wondered","guessed","consider","doubted"]},
+      {no:26, opts:["let","cause","start","bring"]},
+      {no:27, opts:["more","many","most","much"]},
+      {no:28, opts:["without","although","instead","unless"]},
+      {no:29, opts:["going","coming","falling","moving"]},
+      {no:30, opts:["become","turned","gone","changed"]},
+    ]
+  },
+  { title:"BIRTH OF MOVIES",
+    passage:`Did you know that cinema is more than 100 years old? Moving pictures invented by the brothers Louis and Auguste Lumière. The first showing of a moving picture or ‘movie’ (21) ________ place in a cinema in Paris on 28th December 1895. On that day, the Lumière brothers showed movies (22) ________ their newly-invented machine, called the Cinematograph. The audience saw a funny film in (23) ________ a gardener spilt a lot of water on (24) ________ by accident. Everyone really loved it!\nCinema very (25) ______ became popular all over the world. In 1907 the first film studios were built in a (26) ________ of Los Angeles called Hollywood. (27) ______ the 1920s, Hollywood had become the centre of the world film (28) ________.\nTo begin with, the movies had no sound. Words (29) ________ on the screen from time to time to (30) ________ the story.`,
+    q:[
+      {no:21, opts:["took","found","went","gave"]},
+      {no:22, opts:["using","making","setting","doing"]},
+      {no:23, opts:["which","who","where","what"]},
+      {no:24, opts:["himself","yourself","themselves","itself"]},
+      {no:25, opts:["quickly","immediately","fast","early"]},
+      {no:26, opts:["district","site","location","place"]},
+      {no:27, opts:["by","at","for","to"]},
+      {no:28, opts:["industry","company","trade","firm"]},
+      {no:29, opts:["appeared","happened","developed","displayed"]},
+      {no:30, opts:["explain","prove","direct","advise"]},
+    ]
+  },
+  { title:"SINGAPORE ECONOMY",
+    passage:`Singapore has a highly developed market-based economy, (21) ________ historically revolves around extended trade. Along with Hong Kong, South Korea and Taiwan, Singapore is one (22) ________ the Four Asian Tigers. The economy (23) ________ heavily on exports, refining, imported goods, especially in manufacturing. Manufacturing constituted twenty-six (24) ________ of Singapore’s GDP (25) ________ 2005. The manufacturing industry is well-diversified into electronics, petroleum refining, chemicals, (26) ________ engineering and biomedical sciences manufacturing. In 2006, Singapore (27) ________ about 10 percent of the world’s foundry water output. Singapore is the (28) ________ port in the world in terms of tonnage shipped. Singapore is the world’s (29) ________ largest foreign exchange trading centre after London, New York City (30) ________ Tokyo.`,
+    q:[
+      {no:21, opts:["which","whom","why","who"]},
+      {no:22, opts:["of","in","for","at"]},
+      {no:23, opts:["depends","depending","was depen","depend"]},
+      {no:24, opts:["percent","persuasion","perception","percentage"]},
+      {no:25, opts:["in","since","at","for"]},
+      {no:26, opts:["mechanical","machine","mechanically","mechanic"]},
+      {no:27, opts:["produced","produces","produce","producing"]},
+      {no:28, opts:["busiest","busier","more busy","busy"]},
+      {no:29, opts:["fourth","fiveth","six","four"]},
+      {no:30, opts:["and","but","or","so"]},
+    ]
+  },
+  { title:"PONY EXPRESS",
+    passage:`Before 1860 there was no quick way of getting mail between the east and the west of the United States. There were no railways at that (21) ________ and most mail was sent by coach. It usually (22) ________ at least 25 days for coaches to (23) ________ the coast. So in 1860 it (24) ________ decided to send mail by 'Pony Express', which was much faster. Riders (25) ________ very fast horses were placed along the route. They were at (26) ________ distances from each other and the mail was handed from one rider to the next. Riders were all (27) ________ to travel between twenty and thirty kilometres (28) ________ day on very bad roads. At each stop two minutes were (29) ________ for exchanging the mail bags, but riders were often held up by awful weather (30) ________ closed the roads. With the invention of the telegraph in 1861, the demand for Pony Express disappeared.`,
+    q:[
+      {no:21, opts:["time","date","age","season"]},
+      {no:22, opts:["took","lasted","spent","passed"]},
+      {no:23, opts:["reach","arrive","come","get"]},
+      {no:24, opts:["was","had","has","is"]},
+      {no:25, opts:["with","of","for","behind"]},
+      {no:26, opts:["equal","like","same","level"]},
+      {no:27, opts:["expected","wanted","wished","hoped"]},
+      {no:28, opts:["a","one","some","any"]},
+      {no:29, opts:["allowed","let","done","made"]},
+      {no:30, opts:["which","where","what","when"]},
+    ]
+  },
+  { title:"A LUCKY PICNIC",
+    passage:`When I was a child, we used to go to my grandmother’s house. We often had a picnic in a wood which was (21) ________ of wild flowers. We always used to go to the (22) ________ place. One day when we had finished our picnic, my mother noticed that she had (23) _______ her ring, (24) _______ had her initials inside it. We looked everywhere for it and we carried on until it was dark and we had to give (25) ________. Thirty years later, I was on holiday with my own children and we (26) ________ the same wood. We decided to have a picnic there. It was my son who made it a lucky day. He was bored with the picnic (27) _________ he started digging a hole (28) ___________ a tree. Suddenly, he (29) ________ up a ring. It had some writing inside it and we all (30) _________ it was my mother’s ring. She was really happy when we gave it back to her!`,
+    q:[
+      {no:21, opts:["full","busy","complete","crowded"]},
+      {no:22, opts:["same","single","similar","alike"]},
+      {no:23, opts:["lost","stolen","disappeared","missed"]},
+      {no:24, opts:["which","whose","where","who"]},
+      {no:25, opts:["up","away","out","back"]},
+      {no:26, opts:["found","came","realised","met"]},
+      {no:27, opts:["so","but","although","because"]},
+      {no:28, opts:["under","up","between","at"]},
+      {no:29, opts:["came","took","looked","held"]},
+      {no:30, opts:["agreed","persuaded","promised","recommended"]},
+    ]
+  },
+  { title:"WEATHER",
+    passage:`Weather influences the lives of everyone. The climate of any country depends on its position on Earth, its (21) ________ from the sea and how high it is. In countries which have sea all (22) ________ them, like Britain and New Zealand, winters are mild, and summers are cool. There is not a huge change from one season to (23) ________.\nCountries near the Equator have hot weather all year with some (24) ________ rain, except in deserts where it rains (25) ________ little. Above the desert there are no clouds in the sky, so the (26) ________ of the sun can easily warm the ground during the day, but it gets very cold at night.\nPeople are always (27) ________ in unusual weather and pictures of tornadoes, for example, are shown on television. Strong winds and rain can (28) ________ a lot of damage to buildings, and in spite of modern (29) ________ of weather forecasting they can (30) ________ surprise us.`,
+    q:[
+      {no:21, opts:["distance","space","depth","length"]},
+      {no:22, opts:["around","through","near","beside"]},
+      {no:23, opts:["another","next","later","other"]},
+      {no:24, opts:["heavy","thick","large","great"]},
+      {no:25, opts:["very","not","quite","more"]},
+      {no:26, opts:["heat","fire","light","temperature"]},
+      {no:27, opts:["interested","attracted","keen","excited"]},
+      {no:28, opts:["cause","make","happen","have"]},
+      {no:29, opts:["methods","tools","jobs","plans"]},
+      {no:30, opts:["still","yet","already","ever"]},
+    ]
+  },
+  { title:"MY LIFE IN BOOKS",
+    passage:`It was my parents, of course, who taught me to read. I can’t (21) ________ my life before reading, without books. When I started reading, a book was mainly pictures. Now (22) ________ I am older, a book (23) ________ only words in most cases. (24) ________ I also love art books, (25) ________ the pages to look slowly and hungrily at paintings (26) ________ the walls of galleries and museums around the planet.\nI spend hours and hours reading, lost in other worlds, traveling, dreaming, imagining people and places. Books (27) ________ me smells and sounds I may never experience directly, but (28) ________ seem to make my life more interesting.\nThis love of books is not without (29) ________ own problems. For example, when I go to the cinema to watch a film with friends, I don’t get as excited as they (30) ________. I can’t wait to get back home to my books.`,
+    q:[
+      {no:21, opts:["remember","repeat","remind","register"]},
+      {no:22, opts:["that","then","so","how"]},
+      {no:23, opts:["contains","counts","controls","keeps"]},
+      {no:24, opts:["But","Or","And","Why"]},
+      {no:25, opts:["turning","changing","putting","placing"]},
+      {no:26, opts:["from","in","with","at"]},
+      {no:27, opts:["bring","pull","carry","move"]},
+      {no:28, opts:["they","what","who","where"]},
+      {no:29, opts:["its","their","the","some"]},
+      {no:30, opts:["do","be","make","go"]},
+    ]
+  },
+  { title:"CARTOON FILMS",
+    passage:`Cartoon films have very few limits. If you can draw something, you can (21) ________ it move on the cinema screen. The use (22) ________ new ideas and advanced computer programs means that cartoons are becoming exciting again for people of (23) ________ ages.\nBy the (24) ________ of the 1970s, the cinema world had decided that cartoons were only for children. But soon (25) ________ one or two directors had some original new ideas. They proved that it was possible to make films in which both adults and children could (26) ________ the fun.\nHowever, (27) ________ cartoon film was successful. The Black Cauldron, for example, failed, mainly because it was too (28) ________ for children and too childish for adults. Directors learnt from this (29) ________, and the film companies began to make large (30) ________ of money again.`,
+    q:[
+      {no:21, opts:["make","cause","wish","get"]},
+      {no:22, opts:["of","for","with","by"]},
+      {no:23, opts:["all","other","more","these"]},
+      {no:24, opts:["end","finish","departure","back"]},
+      {no:25, opts:["afterwards","later","next","then"]},
+      {no:26, opts:["share","add","mix","divide"]},
+      {no:27, opts:["every","both","any","each"]},
+      {no:28, opts:["frightening","fear","afraid","nervous"]},
+      {no:29, opts:["mistake","crimes","damage","fault"]},
+      {no:30, opts:["amounts","accounts","numbers","totals"]},
+    ]
+  },
+  { title:"NEW HOME - NEW SCHOOL",
+    passage:`Last year my Dad got a new job. It was in a town was 100 kms from our home. Mum and Dad (21) ________ we would have to move, because it was a long way for Dad to (22) ________ every day.\nWhen they (23) ________ me about their plan I was upset (24) ________ I loved my home and school. I was worried that I would (25) ________ all my friends and teachers a lot.\nAnyway, six months (26) ________ that, my family moved to the town of Hexford. The house was much bigger than our old one, and (27) ________ my bedroom window I (28) ________ see the sea.\nI wasn't looking forward to the first day at my new school. I felt really (29) ________ about meeting lots of new people. But when I got there everyone was great. My class teacher was nice and I (30) ________ friends with two girls in my class. Moving home isn't that bad, after all!`,
+    q:[
+      {no:21, opts:["decided","chose","selected","picked"]},
+      {no:22, opts:["travel","carry","tour","transport"]},
+      {no:23, opts:["told","spoke","said","explained"]},
+      {no:24, opts:["because","so","but","and"]},
+      {no:25, opts:["miss","lose","leave","forget"]},
+      {no:26, opts:["after","further","next","later"]},
+      {no:27, opts:["from","along","down","away"]},
+      {no:28, opts:["could","shall","must","would"]},
+      {no:29, opts:["nervous","disappointed","angry","bored"]},
+      {no:30, opts:["made","found","knew","met"]},
+    ]
+  },
+  { title:"WILLIAM THE HERO!",
+    passage:`Brave William Baldock, who is six years old, is a hero after helping his mother when she fell downstairs. William quickly rang (21) _______ an ambulance when he discovered his mother had broken her leg. In spite of being frightened, he (22) _______ the emergency services what had happened and answered all the questions they asked him. He also telephoned his father (23) _______ work, and then his grandmother, to explain what he had (24) _______. While waiting for (25) _______ people to come, William looked after his 18-month-old sister.\nWhen ambulance man Steve Lyn went to the house, he was amazed: 'It's (26) _______ that a young boy of six knew the right number to (27) _______, and was able to give us the correct information. (28) ________ of William's quick thinking, we were able to (29) ________ there immediately.'\nMrs Baldock left hospital yesterday, very (30) ________ to both William and the ambulance service.`,
+    q:[
+      {no:21, opts:["for","of","with","at"]},
+      {no:22, opts:["told","talked","spoke","said"]},
+      {no:23, opts:["at","by","for","these"]},
+      {no:24, opts:["done","finished","departed","made"]},
+      {no:25, opts:["these","every","next","then"]},
+      {no:26, opts:["great","pleased","fine","clever"]},
+      {no:27, opts:["dial","put","ring","hit"]},
+      {no:28, opts:["Because","As","So","Since"]},
+      {no:29, opts:["get","go","damage","fault"]},
+      {no:30, opts:["grateful","agreeable","happy","approving"]},
+    ]
+  },
+  { title:"HEALTH & DISEASE",
+    passage:`Health is something we tend to (21) _______ when we have it. When our body is doing well, we are hardly (22) ________ of it. But illness can come, even (23) _______ we are young. In fact, childhood has been a very susceptible time. Many diseases attack children in particular, and people know very little (24) ______ to cure them once they struck. The result was that many children died. About a century ago, (25) __________, scientists found out about germs, and then everything changed. The (26) ______ of many diseases was found, and cures were developed. As this medical discovery spread, the world became (27) ______ safer for children. The result is that (28) _________ a hundred years ago, the average man lived for 35 years, nowadays, in many areas of the world, people can (29) _______ to live for 75 years. And what do we expect by the year 2020? Undoubtedly, medical science will continue to (30) ________. Some people will be able to avoid medical problems that are unavoidable today.`,
+    q:[
+      {no:21, opts:["ignore","forget","give up","throw away"]},
+      {no:22, opts:["aware","keen","awake","concerned"]},
+      {no:23, opts:["when","if","so","why"]},
+      {no:24, opts:["how","what","which","when"]},
+      {no:25, opts:["however","therefore","so","then"]},
+      {no:26, opts:["cause","source","origin","reason"]},
+      {no:27, opts:["much","more","very","quite"]},
+      {no:28, opts:["whereas","where","when","why"]},
+      {no:29, opts:["expect","hope","design","think"]},
+      {no:30, opts:["advance","speed up","accelerate","run"]},
+    ]
+  },
+  { title:"COMMUNICATION SIGNALS",
+    passage:`Face-to-face conversation is two-way process: You speak to me, I reply to you and so on. Two-way (21) ________ depends on having a coding system that is understood by both (22) ________ and receiver, and an agreed convention about (23) ________ the beginning and end of the (24) ________. In speech, the coding system is the language like English or Spanish; the convention that one person speaks at a time may seem too obvious to (25) ________. In fact, the (26) ________ that people use in conversations and meetings are often non-verbal. For example, lowering the pitch of the voice may mean the end of a sentence; a sharp intake of breath may signal the desire to (27) ________, catching the chairman’s (28) ________ may indicate the desire to speak in a formal setting like a (29) ________, a clenched fist may indicate anger. When these (30) ________ signals are not possible, more formal signals may be needed.`,
+    q:[
+      {no:21, opts:["communication","exchange","correspondance","interchange"]},
+      {no:22, opts:["sender","transmitter","messenger","announcer"]},
+      {no:23, opts:["signaling","symbolizing","signing","showing"]},
+      {no:24, opts:["message","topic","idea","theme"]},
+      {no:25, opts:["mention","judge","recognize","notice"]},
+      {no:26, opts:["signals","symptoms","symbols","signs"]},
+      {no:27, opts:["interrupt","interfere","interchange","intercept"]},
+      {no:28, opts:["eye","elbow","shoulder","hand"]},
+      {no:29, opts:["debate","chat","broadcast","lecture"]},
+      {no:30, opts:["visual","auditory","verbal","sensory"]},
+    ]
+  },
+  { title:"MARKET RESEARCH",
+    passage:`Market research has become more and more important in recent years. In some organizations, in fact, managers will not initiate any activity without market research to back them up.\nThe first thing to be said about market research is that it is not an (21) ________ to management decision making. No form of market research, no matter how deep, complicated and detailed, can ever be seen as a substitute (22) ________ creative decision-making by professional managers. At its very best, all it can do is (23) ________ some doubt and clarify the nature of the problem. It may even be seen as a tool which can improve the (24) ________ of decisions but it is not in itself a decision-making mechanism.\nMarket research, in (25) ________ with a number of other approaches in marketing, suffers from the frequent (26) ________ that it is not really accurate. Market research results can never be completely accurate because they (27) ________ with a dynamic, ever-changing marketplace. It is vital that this is understood by everyone with an imagination when considering market research results and when making any (28) ________ to apply them in the marketplace.\nLastly, it should always be remembered that market research is not an end in itself but simply a (29) ________ by which some degrees of risk can be removed from marketplace activity. If no activity results from the research, then the entire exercise has been completely (30) ________.`,
+    q:[
+      {no:21, opts:["alternative","option","end","opening"]},
+      {no:22, opts:["for","from","at","with"]},
+      {no:23, opts:["remove","reject","omit","deny"]},
+      {no:24, opts:["quality","goodness","well-being","virtue"]},
+      {no:25, opts:["common","association","addition","connection"]},
+      {no:26, opts:["complaint","compliment","refusal","exam"]},
+      {no:27, opts:["deal","work","manage","operate"]},
+      {no:28, opts:["attempt","venture","try","choice"]},
+      {no:29, opts:["means","mode","way","progress"]},
+      {no:30, opts:["pointless","invaluable","priceless","costless"]},
+    ]
+  },
+  { title:"FAMILY MEALS",
+    passage:`Does your family sit down together every day to share a meal? Does someone plan the food carefully, buy it (21) ________ and cook it (22) ________, so that you really enjoy it?\nNowadays, the answer to these questions (23) ________ often ‘no’. Adults usually work and arrive home late. Granny probably lives too (24) ________ away to visit regularly. Children eat fast so they never learn that preparing good food and eating healthily (25) ________ time and thought. In some families, each person eats separately, (26) ________ television or working at a desk and the children often eat (27) ________. By sitting (28) ________ the table with other people, however, children have the chance to learn that a shared meal is a (29) ________ for family members to tell each other their news.\nBut if we can’t (30) ________ eat together, we should try to have family meals at weekends. It’s good for our health, it’s good for society, and it’s fun.`,
+    q:[
+      {no:21, opts:["locally","local","near","nearly"]},
+      {no:22, opts:["well","nice","tasty","good"]},
+      {no:23, opts:["is","gives","has","makes"]},
+      {no:24, opts:["far","distance","long","much"]},
+      {no:25, opts:["takes","wants","gets","asks"]},
+      {no:26, opts:["watching","looking","seeing","attending"]},
+      {no:27, opts:["alone","lonely","single","privately"]},
+      {no:28, opts:["at","on","by","in"]},
+      {no:29, opts:["chance","possibility","situation","event"]},
+      {no:30, opts:["always","quite","ever","never"]},
+    ]
+  },
+  { title:"WOMAN MAKES THE BEST DRIVERS",
+    passage:`In London, only one in ten bus drivers is a woman. Yet, according to the results of recent research, women are better at (21) ________ with problem passengers, have fewer accidents and are quicker at learning to drive buses than men.\nConnie Wilson (22) ________ a bus driver a year ago. ‘(23) ________ first, driving a bus was quite frightening,’ she says. ‘I had no idea of the size of the vehicle or (24) ________ to handle it. But after seven weeks of training, I passed the test first time. Trying to (25) ________ to the timetable when the traffic is (26) ________ isn’t easy but I like the challenge! Some passengers (27) ________ be rude, especially if they’ve had to (28) ________ a long time for the bus. But most are pleased to have a woman driver. There’s no (29) ________ why women can’t do the job just as well as men. I’d (30) ________ it to any woman!`,
+    q:[
+      {no:21, opts:["dealing","considering","managing","behaving"]},
+      {no:22, opts:["became","got","started","turned"]},
+      {no:23, opts:["At","By","In","From"]},
+      {no:24, opts:["how","why","which","what"]},
+      {no:25, opts:["keep","check","respect","carry"]},
+      {no:26, opts:["heavy","deep","large","rough"]},
+      {no:27, opts:["can","should","need","want"]},
+      {no:28, opts:["wait","delay","expect","attend"]},
+      {no:29, opts:["reason","cause","purpose","account"]},
+      {no:30, opts:["recommend","approve","lead","admire"]},
+    ]
+  }
+];
+
+// --- LOGIC ỨNG DỤNG ---
+const menuDiv = document.getElementById('menu');
+const menuSection = document.getElementById('menuSection');
+const quizSection = document.getElementById('quizSection');
+const resultDiv = document.getElementById('result');
+const backBtn = document.getElementById('backMenu');
+let current = null;
+
+// 1. TẠO MENU
+quizzes.forEach((q,i)=>{
+  const btn = document.createElement('div');
+  btn.className = 'menu-item';
+  btn.innerHTML = `<span class="badge">Bài ${i+1}</span> <span>${q.title}</span>`;
+  btn.onclick = ()=> startQuiz(i);
+  menuDiv.appendChild(btn);
+});
+
+// 2. HÀM TRỘN MẢNG (Shuffle)
+function shuffle(arr){
+  const newArr = [...arr];
+  for(let i = newArr.length -1; i >0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+}
+
+// 3. VÀO BÀI THI
+function startQuiz(idx){
+  current = idx;
+  menuSection.classList.add('hidden');
+  quizSection.classList.remove('hidden');
+  resultDiv.style.display = 'none';
+  backBtn.classList.remove('hidden');
+  renderQuiz();
+  window.scrollTo(0,0);
+}
+
+// 4. QUAY VỀ MENU
+backBtn.onclick = () => {
+  quizSection.classList.add('hidden');
+  menuSection.classList.remove('hidden');
+  resultDiv.style.display = 'none';
+  backBtn.classList.add('hidden');
+};
+
+// 5. HIỂN THỊ CÂU HỎI
+function renderQuiz(){
+  const qset = quizzes[current];
+  quizSection.innerHTML = '';
+  
+  // Đoạn văn
+  const card0 = document.createElement('div'); card0.className='card';
+  card0.innerHTML = `<h2>Bài ${current+1}: ${qset.title}</h2><div class="passage">${qset.passage}</div>`;
+  quizSection.append(card0);
+
+  // Câu hỏi
+  qset.q.forEach((q, qi)=>{
+    const card = document.createElement('div'); card.className='card question';
+    const p = document.createElement('p'); p.className='qtext'; p.textContent = `Câu ${q.no}:`;
+    card.append(p);
+
+    // Dữ liệu đáp án + Trạng thái đúng sai (index 0 luôn đúng)
+    const optsWithIndex = q.opts.map((t,i)=>({t, isCorrect: i===0})); 
+    const shuffledOpts = shuffle(optsWithIndex);
+
+    const optsDiv = document.createElement('div'); optsDiv.className='options';
+    
+    shuffledOpts.forEach((o, indexInShuffled)=>{
+        const btn = document.createElement('button'); 
+        btn.className='opt';
+        btn.dataset.correct = o.isCorrect; // Lưu cờ đúng/sai vào DOM
+        
+        const label = String.fromCharCode(65 + indexInShuffled);
+        btn.textContent = `${label}. ${o.t}`;
+        
+        // Sự kiện Click: Chọn (chưa chấm)
+        btn.onclick = function(){
+            const parent = this.parentNode;
+            parent.querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+        };
+        optsDiv.append(btn);
+    });
+    card.append(optsDiv);
+    quizSection.append(card);
+  });
+
+  // Nút Nộp bài
+  const submitRow = document.createElement('div'); 
+  submitRow.style.marginTop='25px'; submitRow.style.display='flex'; submitRow.style.gap='12px'; submitRow.id = 'submitRow';
+  
+  const sb = document.createElement('button'); sb.className='btn'; sb.textContent='Nộp bài & Chấm điểm';
+  sb.onclick = grade;
+  
+  const again = document.createElement('button'); again.className='btn secondary'; again.textContent='Làm lại bài này';
+  again.onclick = ()=> startQuiz(current);
+  
+  submitRow.append(sb, again);
+  quizSection.append(submitRow);
+}
+
+// 6. CHẤM ĐIỂM
+function grade(){
+  const qset = quizzes[current];
+  let correctCount = 0;
+  const cards = quizSection.querySelectorAll('.question');
+  
+  cards.forEach((card)=>{
+    const btns = card.querySelectorAll('.opt');
+    let userSelected = false;
+
+    btns.forEach(b=>{
+        // Khóa nút
+        b.disabled = true;
+        b.style.cursor = 'default';
+        b.onclick = null;
+
+        const isCorrectOption = (b.dataset.correct === 'true');
+        const isSelected = b.classList.contains('selected');
+
+        if (isSelected) {
+            userSelected = true;
+            if (isCorrectOption) {
+                b.classList.add('correct'); // Chọn đúng -> Xanh
+                correctCount++;
+            } else {
+                b.classList.add('wrong'); // Chọn sai -> Đỏ
+            }
+        }
+
+        // Hiện đáp án đúng nếu người dùng KHÔNG chọn trúng nó
+        if (isCorrectOption && !isSelected) {
+            b.classList.add('show-missed-correct');
+        }
+    });
+  });
+
+  // Hiển thị kết quả
+  resultDiv.style.display = 'block';
+  const percent = Math.round((correctCount / qset.q.length) * 100);
+  let msg = "Cố gắng hơn nhé!";
+  if(percent >= 50) msg = "Khá tốt!";
+  if(percent >= 80) msg = "Xuất sắc!";
+
+  resultDiv.innerHTML = `
+    <div class="score">${correctCount} / ${qset.q.length} Đúng</div>
+    <div>${msg} (${percent}%)</div>
+    <div style="font-size:0.9em; margin-top:10px; color:var(--muted)">
+       <span style="color:var(--correct)">■</span> Chọn đúng &nbsp; 
+       <span style="color:var(--wrong)">■</span> Chọn sai &nbsp; 
+       <span style="border:1px dashed var(--correct); padding:0 4px">...</span> Đáp án đúng
+    </div>
+  `;
+  
+  resultDiv.scrollIntoView({behavior: "smooth"});
+  
+  // Ẩn nút nộp
+  const submitBtn = document.querySelector('#submitRow .btn');
+  if(submitBtn) submitBtn.style.display = 'none';
+}
+
+// --- CÁC NÚT TIỆN ÍCH ---
+document.getElementById('modeBtn').onclick = ()=>{
+  document.body.classList.toggle('light');
+  document.getElementById('modeBtn').textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
+};
+document.getElementById('fontSize').onchange = e => {
+  document.body.style.fontSize = e.target.value + 'px';
+};
+</script>
+</body>
+</html>
