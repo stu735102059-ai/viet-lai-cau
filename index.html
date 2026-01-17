@@ -1,0 +1,1741 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiz 100 câu - Xáo đáp án — 10 vòng (90s mỗi câu)</title>
+  <style>
+    /* THAY ĐỔI MÀU SANG GIAO DIỆN SÁNG (LIGHT MODE) */
+    :root{
+      --bg1: #f3f4f6; /* Nền chính Rất Sáng */
+      --card: #ffffff; /* Thẻ/Card Màu Trắng */
+      --accent: #1e88e5; /* Xanh dương (Blue) */
+      --accent2: #43a047; /* Xanh lá (Green) */
+      --ok: #2e7d32; /* Xanh lá đậm cho Đúng */
+      --bad: #d32f2f; /* Đỏ đậm cho Sai */
+      --muted: #6b7280; /* Màu chữ Muted */
+      --text: #1f2937; /* Màu chữ Chính (Gần đen) */
+      --glass: rgba(0,0,0,0.05); /* Hiệu ứng Glass/Mờ nhẹ cho light mode */
+      --border-light: rgba(0,0,0,0.1); /* Đường viền nhẹ */
+    }
+
+    /* === DARK MODE VARIABLES === */
+    [data-theme='dark'] {
+      --bg1: #1a202c; /* Nền chính Tối */
+      --card: #2d3748; /* Thẻ/Card Màu Tối hơn */
+      --accent: #63b3ed; /* Xanh dương Sáng */
+      --accent2: #48bb78; /* Xanh lá Sáng */
+      --ok: #68d391; /* Xanh lá Sáng cho Đúng */
+      --bad: #fc8181; /* Đỏ Sáng cho Sai */
+      --muted: #a0aec0; /* Màu chữ Muted Sáng */
+      --text: #e2e8f0; /* Màu chữ Chính Rất Sáng */
+      --glass: rgba(255, 255, 255, 0.08); /* Glass/Mờ nhẹ cho dark mode */
+      --border-light: rgba(255, 255, 255, 0.1); /* Đường viền nhẹ */
+    }
+    
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter, "Segoe UI", Roboto, Arial;
+      /* Nền sáng, gradient nhẹ cho light mode */
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(220, 230, 240, 0.6), transparent), linear-gradient(180deg,#f9fafb 0%, #f3f4f6 100%);
+      color:var(--text);
+      display:flex; align-items:center; justify-content:center; padding:20px;
+    }
+
+    /* Update body gradient for dark mode */
+    [data-theme='dark'] body {
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(55, 65, 81, 0.8), transparent), var(--bg1);
+      color: var(--text);
+    }
+
+    .container{width:100%; max-width:1100px; position:relative;} /* Added relative for final-result positioning */
+    header{display:flex; gap:16px; align-items:center; margin-bottom:18px; flex-wrap: wrap;}
+    header h1{margin:0; font-size:20px}
+    .top-stats{display:flex; gap:10px; margin-left:auto; align-items:center; flex-wrap: wrap;}
+    /* Pill Sáng hơn */
+    .pill{background:var(--glass); padding:8px 12px; border-radius:999px; font-size:13px; color:var(--text); border:1px solid var(--border-light);}
+    /* Card Sáng hơn, Shadow nhẹ nhàng */
+    .card{background:var(--card); border-radius:14px; padding:18px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border:1px solid var(--border-light);}
+    
+    /* Update card shadow for dark mode */
+    [data-theme='dark'] .card {
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    
+    .meta{display:flex; gap:14px; align-items:center; margin-bottom:10px; flex-wrap:wrap}
+    .qnum{font-weight:700; font-size:16px}
+    /* Badge màu accent */
+    .round-badge{background:linear-gradient(90deg,var(--accent),var(--accent2)); color:white; padding:8px 12px; border-radius:10px; font-weight:700}
+    .question{font-size:18px; margin:10px 0 14px; line-height:1.4}
+    .answers{display:grid; gap:12px}
+    /* Nút đáp án sáng */
+    .btn{
+      background:white; border:1px solid var(--border-light); padding:12px 14px; border-radius:10px; text-align:left;
+      cursor:pointer; transition:transform .12s ease, box-shadow .12s ease, border-color .12s;
+      display:flex; gap:12px; align-items:center; color:var(--text);
+    }
+    .btn:hover{transform:translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05);}
+
+    /* Update hover effects for dark mode buttons */
+    [data-theme='dark'] .btn:hover{
+      transform:translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+    
+    /* Dark mode button styles */
+    [data-theme='dark'] .btn{
+      background: var(--card); /* Base color */
+    }
+
+    /* Label Sáng */
+    .label{width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; background:var(--glass); color:var(--text);}
+    /* Correct/Wrong light mode */
+    .btn.correct{border-color: var(--ok); background:rgba(46, 125, 50, 0.1); box-shadow:0 10px 30px rgba(46, 125, 50, 0.07)}
+    .btn.wrong{border-color: var(--bad); background:rgba(211, 47, 47, 0.1); box-shadow:0 10px 30px rgba(211, 47, 47, 0.06)}
+
+    /* Dark mode Correct/Wrong */
+    [data-theme='dark'] .btn.correct{border-color: var(--ok); background:rgba(104, 211, 145, 0.15); box-shadow:0 10px 30px rgba(104, 211, 145, 0.1)}
+    [data-theme='dark'] .btn.wrong{border-color: var(--bad); background:rgba(252, 129, 129, 0.15); box-shadow:0 10px 30px rgba(252, 129, 129, 0.1)}
+    
+    .feedback{margin-top:12px; padding:12px; border-radius:10px; background:var(--glass); border:1px solid var(--border-light)}
+    .feedback .title{font-weight:800; margin-bottom:6px; color:var(--text)}
+    .rule{font-size:14px; color:var(--text); opacity:0.95; line-height:1.5}
+    .controls{display:flex; gap:8px; margin-top:14px; align-items:center; flex-wrap:wrap}
+    /* Action button accent (gradient) */
+    button.action{background:linear-gradient(90deg,var(--accent),var(--accent2)); color:white; border:none; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:800; box-shadow:0 5px 15px rgba(30, 136, 229, 0.25)}
+    /* Ghost button light mode */
+    button.ghost{background:white; border:1px solid var(--border-light); color:var(--text); padding:10px 12px; border-radius:10px; cursor:pointer; box-shadow: none;}
+    
+    /* Dark mode ghost button */
+    [data-theme='dark'] button.ghost{
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      color: var(--text);
+    }
+    
+    .scoreboard{display:flex; gap:10px; align-items:center; margin-left:auto; flex-wrap: wrap;}
+    /* Big Score Sáng */
+    .big-score{font-weight:900; font-size:16px; padding:8px 12px; border-radius:10px; background:var(--glass); border:1px solid var(--border-light);}
+    .timer{font-weight:900; font-size:18px; color:var(--accent); display:flex; gap:8px; align-items:center}
+    /* Timer bar Sáng */
+    .timer-bar{height:8px; background:var(--glass); border-radius:999px; overflow:hidden; width:260px; border:1px solid var(--border-light)}
+    .timer-fill{height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); width:100%; transform-origin:left; transition:width 1s linear}
+    .round-summary{margin-top:12px; padding:12px; border-radius:10px; background:var(--glass); border:1px solid var(--border-light); display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap: wrap;}
+    .sparkle{position:absolute; pointer-events:none; width:24px; height:24px; border-radius:6px; background:linear-gradient(90deg,#000,#333); opacity:0.08; transform:rotate(10deg)}
+    footer{margin-top:12px; font-size:13px; color:var(--muted)}
+    .explain-full{margin-top:10px; padding:10px; border-radius:8px; background:rgba(0,0,0,0.05); font-size:14px; color:var(--text); border:1px solid var(--border-light);}
+    
+    /* Dark Mode specific background for explain-full */
+    [data-theme='dark'] .explain-full {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    /* === FINAL RESULT & START SCREEN STYLES === */
+    .overlay-screen {
+        position: fixed; /* Fixed to cover the whole viewport */
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        background: var(--bg1); 
+        padding: 20px;
+        overflow: auto; /* Allow scrolling for large content */
+    }
+    .overlay-screen > .content {
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+        background: var(--card); 
+        border-radius: 14px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2); 
+        border:1px solid var(--border-light);
+    }
+    [data-theme='dark'] .overlay-screen > .content {
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6); 
+    }
+    
+    .round-selection {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .round-btn {
+        background: var(--glass);
+        color: var(--text);
+        border: 1px solid var(--border-light);
+        padding: 15px 10px;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.1s ease, background-color 0.1s;
+    }
+    .round-btn:hover {
+        background: var(--accent);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(30, 136, 229, 0.2);
+    }
+    /* === END FINAL RESULT & START SCREEN STYLES === */
+
+    /* NEW: REVIEW LIST STYLES */
+    .review-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+        background: var(--card);
+        cursor: pointer;
+        transition: background 0.1s, transform 0.1s;
+    }
+    .review-item:hover {
+        background: var(--glass);
+        transform: translateY(-1px);
+    }
+    .review-item .status-icon {
+        font-size: 20px;
+        font-weight: 800;
+        margin-right: 15px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .review-item.correct .status-icon {
+        color: var(--ok);
+        background: rgba(46, 125, 50, 0.1);
+    }
+    .review-item.wrong .status-icon, .review-item.skipped .status-icon {
+        color: var(--bad);
+        background: rgba(211, 47, 47, 0.1);
+    }
+    .review-item.unanswered .status-icon {
+        color: var(--muted);
+        background: var(--glass);
+    }
+    .review-item .q-title {
+        font-weight: 700;
+        color: var(--text);
+        flex-grow: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    /* END NEW: REVIEW LIST STYLES */
+
+    @media (max-width:900px){
+      header h1{display: none;}
+      .top-stats{width: 100%; margin: 0 auto;}
+      .scoreboard{flex-direction: column; align-items: flex-end; margin-left: 0; margin-top: 10px;}
+      .big-score{width: 100%; text-align: right;}
+    }
+
+    @media (max-width:720px){
+      .timer-bar{width:160px}
+      .question{font-size:16px}
+      .round-selection {
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      }
+      .controls{gap: 4px;}
+      .controls button{font-size: 12px; padding: 8px 10px;}
+      .pill:last-child{display: none;} /* Hide 90s info on small screen */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <div id="startScreen" class="overlay-screen">
+      <div class="content">
+        <h2 style="color:var(--accent); margin-top:0;">Chọn Vòng Chơi (10 Câu/Vòng)</h2>
+        <p style="color:var(--muted); font-size:15px;">Chọn một vòng để bắt đầu ôn tập. Điểm số của vòng đó sẽ được tính.</p>
+        <div class="round-selection" id="roundSelectionButtons">
+          </div>
+        <p style="margin-top:25px; font-size:14px;">Bạn có thể chuyển chế độ ngày/đêm và xem lại câu đã làm sau khi vào game.</p>
+      </div>
+    </div>
+
+    <div id="reviewScreen" class="overlay-screen" style="display:none;">
+      <div class="content" style="max-width: 800px;">
+        <h2 style="color:var(--accent); margin-top:0; border-bottom:1px solid var(--border-light); padding-bottom:10px;">
+            📜 Xem Lại Kết Quả Vòng <span id="reviewRoundNum">1</span>
+        </h2>
+        <div id="reviewList" style="text-align: left; max-height: 50vh; overflow-y: auto; padding: 10px 0;">
+          </div>
+        <div style="margin-top:20px;">
+          <button class="action" id="closeReviewBtn">Đóng lại</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="quizContent" style="display:none;">
+        <header>
+          <h1>Quiz 100 câu — Xáo đáp án • 10 vòng • 90s/câu</h1>
+          <div class="top-stats">
+            <div class="pill">Vòng: <span id="roundNum">1</span>/10</div>
+            <div class="pill">Câu: <span id="qProgress">1</span>/10</div>
+            <div class="pill">Loại: <span id="typeLabel">Type 1</span></div>
+            <div class="pill">Cộng đồng: <small style="opacity:0.85">Ôn tập</small></div>
+            <div class="scoreboard">
+              <div class="big-score">Vòng điểm: <span id="roundScore">0</span></div>
+              <div class="big-score">Tổng điểm: <span id="totalScore">0</span></div>
+            </div>
+          </div>
+        </header>
+    
+        <div class="card" id="card">
+          <div class="meta">
+            <div class="qnum">Câu <span id="globalIndex">1</span> (Tổng 100)</div>
+            <div class="round-badge" id="roundBadge">Vòng 1</div>
+            <div style="margin-left:auto" class="timer" aria-live="polite">
+              <div id="timeDisplay">90s</div>
+              <div class="timer-bar"><div id="timerFill" class="timer-fill"></div></div>
+            </div>
+          </div>
+    
+          <div class="question" id="questionText">Đang tải câu hỏi...</div>
+    
+          <div class="answers" id="answers"></div>
+    
+          <div id="feedbackArea"></div>
+    
+          <div class="controls">
+            <button class="action" id="nextBtn" disabled>Câu tiếp theo ▶</button>
+            <button class="ghost" id="pauseBtn">⏸ Tạm dừng</button>
+            <button class="ghost" id="restartBtn">🔁 Làm lại vòng</button>
+            <button class="ghost" id="skipBtn">⏭ Bỏ qua (tính sai)</button>
+            
+            <button class="ghost" id="reviewBtn" style="font-weight:700">📜 Xem lại Vòng</button>
+            <button class="ghost" id="darkModeToggle" style="font-weight:700">🌙 Dark Mode</button>
+            <button class="ghost" id="selectRoundBtn" style="font-weight:700">🎯 Chọn Vòng Khác</button>
+            
+            <div style="margin-left:auto" class="pill">90s cho mỗi câu</div>
+          </div>
+    
+          <div class="round-summary" id="roundSummary" style="display:none">
+            <div><strong id="roundTitle">Vòng 1 kết thúc</strong><div id="roundDetail"></div></div>
+            <div style="text-align:right">
+              <div>Vòng điểm: <strong id="roundFinalScore">0</strong>/10</div>
+              <div>Tổng điểm: <strong id="totalFinalScore">0</strong>/100</div>
+              <div style="margin-top:8px"><button class="action" id="continueBtn">Tiếp vòng ▶</button></div>
+            </div>
+          </div>
+    
+          <footer>
+            <div>Ghi chú: Câu hỏi giữ đúng thứ tự bạn cung cấp; mỗi lần hiển thị đáp án A–D được <strong>xáo</strong>. Đáp án đúng là đáp án gốc (phần tử 1 trong mỗi câu) — hệ thống dùng để kiểm tra tự động.</div>
+          </footer>
+        </div>
+    </div>
+    
+  </div>
+
+  <script>
+    /************************************************************************
+     * Dữ liệu: toàn bộ 100 câu
+     ************************************************************************/
+
+    const questions = [
+      // ---- Writing Type 1 (1..60) - giữ nguyên thứ tự từ dữ liệu
+      { q: "She is the most intelligent woman I have ever met.", opts:[
+          "I have never met a more intelligent woman than her.",
+          "I have never met a most intelligent woman than her.",
+          "He has never met a less intelligent woman than her.",
+          "We have never met a more intelligent woman than her."
+        ], explain:"" },
+
+      { q: "\"Why didn't you send the report?\" his boss asked.", opts:[
+          "His boss asked him why he hadn't sent the report.",
+          "His boss asked him why he hadn't received the report.",
+          "His boss asked him why they haven’t sent the report.",
+          "His boss asked him why he don’t send the report."
+        ], explain:"" },
+
+      { q: "If it hadn’t been for his carelessness, we would have finished the work.", opts:[
+          "If he had been more careful, we would have completed the work.",
+          "If we had been more careful, we would completed the work.",
+          "If they had been more careful, he would have completed the work.",
+          "If she had been more careful, we would have completed the work."
+        ], explain:"" },
+
+      { q: "The garage is going to repair the car for us next week.", opts:[
+          "We are going to have the car repaired next week.",
+          "She are going to have the car repaired next week.",
+          "We are going to have the motorbike repair next week.",
+          "We are going to have the plane repairing next week."
+        ], explain:"" },
+
+      { q: "They’ll have to change the date of the meeting again.", opts:[
+          "The date of the meeting will have to be changed again.",
+          "The day of the meeting will has to be changed again.",
+          "The date of the lecture will have to be changed again.",
+          "The date of the meeting have to be changed again."
+        ], explain:"" },
+
+      { q: "The bus takes longer than the train.", opts:[
+          "The train doesn’t take as long as the bus.",
+          "The train doesn’t take much less than the bus.",
+          "The plane doesn’t take as long as the bus.",
+          "The bus doesn’t take as long as the train."
+        ], explain:"" },
+
+      { q: "They are building a garage near my house at the moment.", opts:[
+          "A garage is being built near my house at the moment.",
+          "A garage are being built near my house now.",
+          "A garage is built near my house at the moment.",
+          "A garage was built near my house at the moment."
+        ], explain:"" },
+
+      { q: "The woman was too weak to lift the suitcase", opts:[
+          "The woman was so weak that she couldn't lift the suitcase.",
+          "The man was such weak that she couldn't lift the suitcase.",
+          "The woman is so weak that she couldn't lift the suitcase.",
+          "The woman has been so weak that she can’t lift the suitcase."
+        ], explain:"" },
+
+      { q: "\"John, please don't tell anyone my address.\" said Mary", opts:[
+          "Mary asked John not to tell anyone her address.",
+          "Mary ask John not to tell anyone her address.",
+          "Mary asked John not to tell somebody her address.",
+          "Mary asked John to tell anyone her address."
+        ], explain:"" },
+
+      { q: "City life is not as peaceful as country life.", opts:[
+          "Country life is not as noisy as city life.",
+          "Country life is most peaceful than city life.",
+          "Country life is as noisy as city life.",
+          "Country life is much peaceful than city life."
+        ], explain:"" }, // END VÒNG 1 (Câu 10)
+
+      { q: "Our hotel booking hasn't been confirmed.", opts:[
+          "There has been no confirmation of our hotel booking.",
+          "There have been no confirmation of our hotel booking.",
+          "There had been no confirmation of our hotel booking.",
+          "There was no confirmation of our hotel booking."
+        ], explain:"" },
+
+      { q: "We could not have handled the situation without you.", opts:[
+          "If you had not helped us, we could not have handled the situation.",
+          "If you had helpus, we could not handled the situation.",
+          "If you hasn’t helped us, we could not have handled the situation.",
+          "If you didn’t helped us, we could not handle the situation."
+        ], explain:"" },
+
+      { q: "“Sorry I haven’t finished my assignment,” said Peter.", opts:[
+          "Peter apologized for not having finished his assignment.",
+          "Peter apologized for finishing his assignment.",
+          "Peter apologized for not finish his assignment.",
+          "Peter apologized for not finished his assignment."
+        ], explain:"" },
+
+      { q: "It’s widely believed that hard work makes success.", opts:[
+          "Hard work is widely believed to make success.",
+          "Hard work are widely believed to make success.",
+          "Hard work was widely believed to make success.",
+          "Hard work is not widely believed to make success."
+        ], explain:"" },
+
+      { q: "If you don’t follow your heart, you will regret later.", opts:[
+          "Unless you follow your heart, you will regret later.",
+          "Unless you don’t follow your heart, you will regret later.",
+          "If only you follow your heart, you will regret later.",
+          "Unless you follow your heart, you won’t regret later."
+        ], explain:"" },
+
+      { q: "Whenever you finish using the blender, wash it thoroughly.", opts:[
+          "The blender must be washed thoroughly after every use.",
+          "The blender mustn’t be washed thoroughly after every use.",
+          "The blender must washed thoroughly after every use.",
+          "The blender be washed thoroughly after every use."
+        ], explain:"" },
+
+      { q: "I always considered her to be my second mother.", opts:[
+          "She was always considered to be my second mother.",
+          "She wasn’t always considered to be my second mother.",
+          "She was always considered to be my first mother.",
+          "She wasn’t always considered to be my mother."
+        ], explain:"" },
+
+      { q: "I have never met a more thoughtful person than Mrs. Jones.", opts:[
+          "Mrs. Jones is the most thoughtful person I’ve ever met.",
+          "Mrs. Jones is the more thoughtful person I’ve ever met.",
+          "Mrs. Jones is the most thoughtful person I’ve ever meet.",
+          "Mrs. Jones is the most thoughtful person I has ever met."
+        ], explain:"" },
+
+      { q: "Barbara is the best tennis-player in the club.", opts:[
+          "No one in the club is as good at tennis as Barbara.",
+          "No one in the club is more good at tennis as Barbara.",
+          "No one in the club is as better at tennis as Barbara.",
+          "No one in the club is as good tennis as Barbara."
+        ], explain:"" },
+
+      { q: "It was such an expensive car thatwe couldn’t buy it.", opts:[
+          "The car wasn’t cheap enough for us to buy.",
+          "The car was cheap enough for us to buy.",
+          "The car wasn’t too cheap for us to buy.",
+          "The car wasn’t cheap enough for us not to buy."
+        ], explain:"" }, // END VÒNG 2 (Câu 20)
+
+      { q: "“You should take more care of your health or you may regret it,” the doctor said to her.", opts:[
+          "The doctor advised her to take more care of her health or she might regret it.",
+          "The doctor advised her take more care of her health or she might regret it.",
+          "The doctor advised her take more care of her health or she must regret it.",
+          "The doctor advise her to take more care of her health or she might regret it."
+        ], explain:"" },
+
+      { q: "I can’t cook as well as my mother does.", opts:[
+          "My mother cooks better than I do.",
+          "My mother cook better than I do.",
+          "My mother cooks more good than I do.",
+          "My mother cooks better than I does."
+        ], explain:"" },
+
+      { q: "His wife was not strong enough to do the planting.", opts:[
+          "His wife was too weak to do the planting.",
+          "His wife was weak do the planting.",
+          "His wifes was too weak to do the planting.",
+          "He wife were too weak to do the planting."
+        ], explain:"" },
+
+      { q: "I don’t have muchmoney, so I don’t buy many books.", opts:[
+          "If I had muchmoney, I would buy many books.",
+          "If I have many money, I would buys many books.",
+          "If I has much money, I would buy many books.",
+          "If I had much money, I would boughtmany books."
+        ], explain:"" },
+
+      { q: "“Attending parties is a good way of socializing,” said the lecturer of psychology.", opts:[
+          "The lecturer of psychology said that attending parties was a good way of socializing.",
+          "The lecturer of psychology said that attend parties has been a good way of socializing.",
+          "The lecturer of psychology said that attending parties wasn’t a good way of socializing.",
+          "The lecturer of psychology said that attend parties is a good way of socializing."
+        ], explain:"" },
+
+      { q: "\"How often do you go to the cinema?\" asked Jean’s friend.", opts:[
+          "Jean’s friend wanted to know how often she went to the cinema.",
+          "Jean’s friend want to know how often she goes to the cinema.",
+          "Jean’s friend wanted to know how often does she go to the cinema.",
+          "Jean’s friend want to know how often did she go to the cinema."
+        ], explain:"" },
+
+      { q: "If they had arrived a moment later, they would have missed the start of the film.", opts:[
+          "They arrived just in time for the start of the film.",
+          "They arrive just on time for the start of the film.",
+          "They arrived too late for the start of the film.",
+          "They arrived too soon for the start of the film."
+        ], explain:"" },
+
+      { q: "Charlotte didn't leave early, so she missed the bus.", opts:[
+          "If Charlotte had left early, she wouldn't have missed the bus.",
+          "If Charlotte had left early, she won’t havemissed the bus.",
+          "If Charlotte had left early, she would havemiss the bus.",
+          "If Charlotte had leave early, she will have missed the bus."
+        ], explain:"" },
+
+      { q: "The shelf was too high for him to reach.", opts:[
+          "He wasn’t tall enough to reach the shelf.",
+          "He was tall enough to reach the shelf.",
+          "He isn’t tall enough to reach the shelf.",
+          "He is high enough to reach the shelf."
+        ], explain:"" },
+
+      { q: "\"What did you do yesterday, Ann?\" asked Carol.", opts:[
+          "Carol asked Ann what she had done the day before.",
+          "Carol asked Ann what she does the day before.",
+          "Carol ask Ann what she did the day before.",
+          "Carol asked Ann what she had did yesterday."
+        ], explain:"" }, // END VÒNG 3 (Câu 30)
+
+      { q: "Mary didn't leaveearly, so she missed the bus.", opts:[
+          "If Mary had left early, she wouldn't have missed the bus",
+          "If she hadn’t left early, she wouldn't have missed the bus.",
+          "If she had left early, she wouldn't have missed the bus.",
+          "If Mary had left late, she wouldn't have missed the bus."
+        ], explain:"" },
+
+      { q: "The switch wastoo high for him to reach.", opts:[
+          "He wasn’t tall enough to reach the switch.",
+          "He is tall enough to reach the switch.",
+          "He is tall enough to reach the switch.",
+          "The switch wasn’t tall enough to reach the switch."
+        ], explain:"" },
+
+      { q: "They built a garage at the end of last year.", opts:[
+          "A garage was built at the end of last year.",
+          "A garage was built at the end of last year by they",
+          "A garage was building at the end of last year.",
+          "A garage hadbeen built by them at the end of last year."
+        ], explain:"" },
+
+      { q: "I have never met such a strange creature before.", opts:[
+          "This is the first time I have met such a strange creature",
+          "This is the first time I has met such a strange creature.",
+          "This is the first time I met such a strange creature.",
+          "It is the first time I have met such a strange creature."
+        ], explain:"" },
+
+      { q: "Although the weather was bad, we arrived at the airport on time", opts:[
+          "Despite the bad weather, we arrived at the airport on time",
+          "Despite of the bad weather, we arrived at the airport on time.",
+          "Despite the weather is bad, we arrived at the airport on time.",
+          "Even though the bad weather, we arrived at the airport on time."
+        ], explain:"" },
+
+      { q: "Because of his laziness, he failed the exam.", opts:[
+          "As he was lazy, he failed the exam",
+          "Because of he was lazy, he failed the exam.",
+          "As he is lazy, he failed the exam.",
+          "While he was lazy, he failed the exam."
+        ], explain:"" },
+
+      { q: "Her voice is so beautiful that everyone admires it.", opts:[
+          "She has such a beautiful voice that everyone admires it.",
+          "She have such a beautiful voice that everyone admires it.",
+          "She has so a beautiful voice that everyone admires it.",
+          "She has a beautiful voice so that everyone admires it."
+        ], explain:"" },
+
+      { q: "He regrets telling her the truth.", opts:[
+          "He wishes he hadn't told her the truth.",
+          "He wished he hadn't told her the truth.",
+          "He wishes she hadn't told him the truth.",
+          "He wishes he wouldn’t told her the truth."
+        ], explain:"" },
+
+      { q: "The last time it rained was a fortnight ago.", opts:[
+          "It hasn't rained for a fortnight.",
+          "It haven’t rained for a fortnight.",
+          "It hasn't been rained for a fortnight.",
+          "It hasn't rained since a fortnight."
+        ], explain:"" },
+
+      { q: "We will send you a letter with your exam results.", opts:[
+          "You will be sent a letter with your exam results.",
+          "We will be sent a letter with your exam results.",
+          "You will be send a letter with your exam results.",
+          "You will sent a letter with your exam results."
+        ], explain:"" }, // END VÒNG 4 (Câu 40)
+
+      { q: "She can’t have more children because of her age.", opts:[
+          "She is too old to have more children.",
+          "She is so old to have more children.",
+          "She is too old to having more children.",
+          "She is not old to have more children."
+        ], explain:"" },
+
+      { q: "I didn’t know you were coming so I didn’t wait for you.", opts:[
+          "If I had known you were coming, I would have waited for you.",
+          "If I have not known you were coming, I would have waited for you.",
+          "If I had known you were coming, I would waited for you.",
+          "If I had known you are coming, I would have waited for you."
+        ], explain:"" },
+
+      { q: "This is my first visit to Ha Long Bay.", opts:[
+          "I have never visited Ha Long Bay before.",
+          "I has never visited Ha Long Bay before.",
+          "I have never visited Ha Long Bay ago.",
+          "I have never visit Ha Long Bay before."
+        ], explain:"" },
+
+      { q: "Though the traffic was crowded, we arrived at the airport on time.", opts:[
+          "Despite the crowded traffic, we arrived at the airport on time.",
+          "Despite the crowded traffic, but we arrived at the airport on time.",
+          "Despite off the crowded traffic, we arrived at the airport on time.",
+          "Despite the traffic has been crowded, we arrived at the airport on time."
+        ], explain:"" },
+
+      { q: "Because of the hot weather, we stayed indoors.", opts:[
+          "Because the weather was hot, we stayed indoors.",
+          "Due to the weather was hot, we stayed indoors.",
+          "As the weather was hot, so we stayed indoors.",
+          "As the weather was hot, but we stayed indoors."
+        ], explain:"" },
+
+      { q: "\"Why didn't you send the report?\" his employer asked.", opts:[
+          "His employer asked him why he hadn't sent the report.",
+          "His boss asked him why he hasn’t received the report.",
+          "His boss asked him why he don’t sent the report.",
+          "His boss asked him why he hasn’t sent the report."
+        ], explain:"" },
+
+      { q: "Charlote didn't leave early, so she missed the bus.", opts:[
+          "If Charlote had left early, she wouldn't have missed the bus.",
+          "If Charlote had leave early, she will have missed the bus.",
+          "If Charlote had left early, she won’t have missed the bus.",
+          "If Charlote had left early, she would have miss the bus."
+        ], explain:"" },
+
+      { q: "\"What did you do yesterday, Ann?\" asked Carrol.", opts:[
+          "Carrol asked Ann what she had done the day before.",
+          "Carrol ask Ann what she did the day before.",
+          "Carrol asked Ann what she does the day before.",
+          "Carrol asked Ann what she had did yesterday."
+        ], explain:"" },
+
+      { q: "The garage is going to repair the truck for us next month.", opts:[
+          "We are going to have the truck repaired next month.",
+          "He are going to have the car repaired next month.",
+          "We will have the motorbike repair next month.",
+          "We is going to have the plane repairing next month."
+        ], explain:"" },
+
+      { q: "The plane takes longer than the train.", opts:[
+          "The train doesn’t take as long as the plane.",
+          "The plane doesn’t take as long as the bus.",
+          "The train doesn’t take much less than the bus.",
+          "The bus doesn’t take as long as the train."
+        ], explain:"" }, // END VÒNG 5 (Câu 50)
+
+      { q: "Although he was very tired, he agreed to help me with my homework.", opts:[
+          "Despite his tiredness, he agreed to help me with my homework.",
+          "Because his tiredness, he agreed to help me with my homework.",
+          "Because of he was very tired, he agreed to help me with my homework.",
+          "However he was very tired, he agreed to help me with my homework."
+        ], explain:"" },
+
+      { q: "It took us 3 hours to find the room for the night.", opts:[
+          "We spent 3 hours finding the room for the night.",
+          "We spent 3 hours find the room for the night.",
+          "We spent 3 hours to finding the room for the night.",
+          "We spent 3 hours to find the room for the night."
+        ], explain:"" },
+
+      { q: "The woman was too weak to lift the heavy box.", opts:[
+          "The woman was so weak that she couldn't lift the heavy box.",
+          "The woman is so weak that she couldn't lift the heavy box.",
+          "The woman was so strong enough that she couldn't lift the suitcase.",
+          "The woman has been so weak that she can’t lift the suitcase."
+        ], explain:"" },
+
+      { q: "They widelybelieve that hard work makes success.", opts:[
+          "Hard work is widely believed to make success.",
+          "Hard work are wide believed to make success.",
+          "Hard work was widely believe to make success.",
+          "Hard work is not widely believed makingsuccess."
+        ], explain:"" },
+
+      { q: "He suggested visiting Moc Chau to learn about Thai and H’mong people", opts:[
+          "What about visiting Moc Chau to learn about Thai and H’mong people?",
+          "What about visit Moc Chau to learn about Thai and H’mong people?",
+          "How about visit Moc Chau to learn about Thai and H’mong people?",
+          "Let’s visiting Moc Chau to learn about Thai and H’mong people?"
+        ], explain:"" },
+
+      { q: "David has read a lot of books; however, he cannot find a good solution.", opts:[
+          "Although David has read a lot of books, he cannot find a good solution",
+          "Although David has read a lot of books, but he cannot find a good solution",
+          "Though David has read a lot of books, but he cannot find a good solution",
+          "David has read a lot of books, so he cannot find a good solution"
+        ], explain:"" },
+
+      { q: "My English isn't good enough, so I can't participate in the competition.", opts:[
+          "If my English were good enough, I could participate in the competition.",
+          "If my English weren't good enough, I couldn't participate in the competition.",
+          "I could participate in the competition because my English was good.",
+          "If my English is good enough, I can participate in the competition."
+        ], explain:"" },
+
+      { q: "“I am leaving the city tomorrow”, Peter said.", opts:[
+          "Peter said he was leaving the city the next day.",
+          "Peter said that I was leaving the city the next day.",
+          "Peter said that he is leaving the city the following day.",
+          "Peter said that I am leaving the city the following day."
+        ], explain:"" },
+
+      { q: "This is the first time his children have tried Chinese cuisine.", opts:[
+          "His children have never tried Chinese cuisine before.",
+          "His children last tried Chinese cuisine a long time ago.",
+          "His children tried Chinese cuisine at first.",
+          "His children tried Chinese cuisine before."
+        ], explain:"" },
+
+      { q: "You are not allowed to take photos in the museum.", opts:[
+          "You mustn't take photos in the museum.",
+          "You might not take photos in the museum",
+          "You may not take photos in the museum.",
+          "You needn't take photos in the museum."
+        ], explain:"" }, // END VÒNG 6 (Câu 60)
+
+      // ---- Writing Type 2 (61..100) - tiếp theo, giữ thứ tự
+      { q: "Moc Bai border gate in Tay Ninh province is larger than any land border gate in the south.", opts:[
+          "Moc Bai border gate in Tay Ninh province is the largest land border gate in the south.",
+          "Moc Bai border gate in Tay Ninh province is the bigger land border gate in the north.",
+          "Moc Bai border gate in Tay Ninh province is the most large land border gate in the west",
+          "Moc Bai border gate in Tay Ninh province is the larger land border gate in the east."
+        ], explain:"" },
+
+      { q: "How far is it from Ha Tien Town to Ha Tien International Border Gate?", opts:[
+          "How many kilometers are there from Ha Tien Town to Ha Tien International Border Gate?",
+          "How many kilometers have from Ha Tien Town to Ha Tien International Border Gate?",
+          "How much kilometers is there from Ha Tien Town to Ha Tien International Border Gate?",
+          "How many kilometers is there from Ha Tien Town to Ha Tien International Border Gate?"
+        ], explain:"" },
+
+      { q: "“What do you think about Vietnam’s land and people?” The border officer asked the passenger", opts:[
+          "The border officer asked the passenger what he/ she thought about Vietnam’s land and people.",
+          "The police officer asked the passenger what he/ she thought about Vietnam’s land and people.",
+          "The border officer asked the passenger where he/ she thought about Vietnam’s land and people.",
+          "The border officer asked the passenger what he/ she are thinking about Vietnam’s land and people."
+        ], explain:"" },
+
+      { q: "Please return to the ship before midnight.", opts:[
+          "You must return to the ship before midnight.",
+          "You must have returned to the ship before midnight.",
+          "They must return to the ship before midnight.",
+          "You must return to the ship after midnight."
+        ], explain:"" },
+
+      { q: "“Do you have anything to declare?” The border officer asked the passenger.", opts:[
+          "The border officer asked the passenger if he/she had something to declare.",
+          "The police officer asked the passenger if he/she had something to declare.",
+          "The border officer asked the passenger why they had something to declare.",
+          "The border officer asked the passenger how he/she had something to declare."
+        ], explain:"" },
+
+      { q: "The border officers arrested a drug dealer yesterday.", opts:[
+          "A drug dealer was arrested by the border officers yesterday.",
+          "A drug dealer is arrested by the border officers yesterday.",
+          "A drug dealer has been arrested by the border officers yesterday.",
+          "A drug dealer will be arrested by the border officers yesterday."
+        ], explain:"" },
+
+      { q: "“You must sign in the minute and pay the fine.” The border officer told the passenger.", opts:[
+          "The border officer asked the passenger to sign in the minute and pay the fine.",
+          "The police officer asked the passenger sign in the minute and pay the fine.",
+          "The border officer asked the passenger not sign in the minute and pay the fine.",
+          "The border officer asked the passenger not to sign in the minute and pay the fine."
+        ], explain:"" },
+
+      { q: "Do you have anything to declare?", opts:[
+          "Have you got anything to declare?",
+          "Has you got anything to declare?",
+          "Have you anything to declare?",
+          "Have they got anything to declare?"
+        ], explain:"" },
+
+      { q: "“Can I see your passport?” the border officer told the passenger.", opts:[
+          "The border officer asked to see the passenger’s passport.",
+          "The border officer asked not to see the passenger’s passport.",
+          "The police officer asked to see the passenger’s passport.",
+          "The border officer asked me to see the passenger’s passport."
+        ], explain:"" },
+
+      { q: "The Border Guards maintain social order and safety in the border areas.", opts:[
+          "Social order and safety in the border areas are maintained by the Border Guards.",
+          "Social order in the border areas are maintained by the Border Guards.",
+          "Safety in the border areas are maintained by the Border Guards.",
+          "Social order and safety in the border areas are not maintained by the Border Guards."
+        ], explain:"" }, // END VÒNG 7 (Câu 70)
+
+      { q: "Why are you visiting Vietnam now?", opts:[
+          "What is your purpose of visiting Vietnam?",
+          "Why is your purpose of visiting Vietnam?",
+          "What is your purpose of to visit Vietnam?",
+          "What is your purpose of visiting in Vietnam?"
+        ], explain:"" },
+
+      { q: "“Can I see your ID card?” The border officer told the passenger.", opts:[
+          "The border officer asked to see the passenger’s ID card.",
+          "The border officer ask to see the passenger’s ID card.",
+          "The border officer asked to seeing the passenger’s ID card.",
+          "The border officer asked to see the passenger’s passport."
+        ], explain:"" },
+
+      { q: "Border officers examine millions of passports every day.", opts:[
+          "Millions of passports are examined every day.",
+          "Millions of passports is examined every day.",
+          "Millions of passport are examined every day.",
+          "Millions of passports are examine every day."
+        ], explain:"" },
+
+      { q: "You can apply for a visa here.", opts:[
+          "A visa can be applied for here.",
+          "A visa can applied for here.",
+          "A visa can be applyed for here.",
+          "A visa could be applied for here."
+        ], explain:"" },
+
+      { q: "“Have a good trip in Vietnam” The border officer told the passenger.", opts:[
+          "The border officer wished the passenger a good trip in Vietnam.",
+          "The border officer wishing the passenger a good trip in Vietnam.",
+          "The border officer wishing the passenger a good trips in Vietnam.",
+          "The border officer wish the passenger a good trip in Vietnam."
+        ], explain:"" },
+
+      { q: "“Fill in this form for visa extension, please!” the border officer said to the foreigner.", opts:[
+          "“You have to fill in this form for visa extension.” The border officer said to the foreigner.",
+          "“You had to fill in this form for visa extension.” The border officer say to the foreigner.",
+          "“You have to fill in this form extension.” The border officer said to the foreigner.",
+          "“You has to fill in this form for visa extension.” The border officer said to the foreigner."
+        ], explain:"" },
+
+      { q: "The border officer is checking the passenger’s passport.", opts:[
+          "The passenger’s passport is being checked by the border officer.",
+          "The passenger’s passport is being check by the border officer.",
+          "The passenger’s passport is checking by the border officer.",
+          "The passenger’s visa is checked by the border officer."
+        ], explain:"" },
+
+      { q: "What is your purpose of coming to Vietnam?", opts:[
+          "Why do you come to Vietnam?",
+          "When do you come to Vietnam?",
+          "How do you come to Vietnam?",
+          "What do you come to Vietnam?"
+        ], explain:"" },
+
+      { q: "They sold me and my unborn baby for fifty thousand yuan each.", opts:[
+          "My unborn baby and I were sold for fifty thousand yuan each.",
+          "My unborn baby and I are sold for fifty thousand yuan each.",
+          "My unborn baby and I have been sold for fifty thousand each.",
+          "My unborn baby and I had been sold for sixty thousand each."
+        ], explain:"" },
+
+      { q: "She is not allowed to contact her family on the entire trip.", opts:[
+          "She mustn’t contact her family on the entire trip.",
+          "She must contact her family on the entire trip.",
+          "She need contacts her family on the entire trip.",
+          "She can contact her family on the entire trip."
+        ], explain:"" }, // END VÒNG 8 (Câu 80)
+
+      { q: "“Do you know there is a nine-dash line printed on pages 8, 16 and 32 of your passport, Miss Xiao Lan?”, said the border officer.", opts:[
+          "The border officer asked Miss Xiao Lan if/whether she knew there was a nine-dash line printed on pages 8, 16 and 32 of her passport.",
+          "The border officer Miss Xiao Lan if/whether she knew there was a nine-dash line printed on pages 8, 16 and 32 of her passport.",
+          "The border officer agree Miss Xiao Lan if/whether he knew there was a nine-dash line printed on pages 8, 16 and 32 of her passport.",
+          "The border officer asked Miss Xiao Lan if/whether they knew there was a nine-dash line printed on pages 8, 16 and 32 of her passport."
+        ], explain:"" },
+
+      { q: "This is the first time they have been to Vietnam.", opts:[
+          "They have never been to Vietnam before.",
+          "They have never been to Vietnam ago.",
+          "It has never been to Vietnam before.",
+          "They have never go to Vietnam before."
+        ], explain:"" },
+
+      { q: "If you don’t have a valid Vietnamese visa, you can’t enter Vietnam", opts:[
+          "Unless you have a valid Vietnamese visa, you can’t enter Vietnam.",
+          "Unless you had a valid Vietnamese visa, you can’t enter Vietnam.",
+          "Unless you have a valid Vietnamese visa, you can enter Vietnam",
+          "Unless he had a valid Vietnamese visa, you can’t enter Vietnam"
+        ], explain:"" },
+
+      { q: "“May I see your passport?” the border officer said to the foreigner", opts:[
+          "The border officer asked to see the foreigner’s passport.",
+          "The border officer asked the foreigner’s passport.",
+          "The border officer be advised to see the foreigner’s passport.",
+          "The border officer is asked to see the foreigner’s passport."
+        ], explain:"" },
+
+      { q: "“How long have you stayed in Vietnam?” the border officer said to the foreigner.", opts:[
+          "The border officer asked the foreigner how long he/ she had stayed in Vietnam.",
+          "The border officer asked how long he/ she had stayed in Vietnam.",
+          "The border officer asked the foreigner how often he/ she had stayed in Vietnam.",
+          "The border officer asked the foreigner how long he/ she have been stayed in Vietnam."
+        ], explain:"" },
+
+      { q: "“Please, drive your truck to the checking area!” The border officer said to the foreigner.", opts:[
+          "The border officer asked the foreigner to drive his/her truck to the checking area.",
+          "The border officer asked the foreigner driving his/her truck to the checking area.",
+          "The border officer asked the foreigner drived his/her truck to the checking area.",
+          "The border officer asked the foreigner to drive our/their truck to the checking area."
+        ], explain:"" },
+
+      { q: "“How many crew are there on your ship?” the border officer said to the captain.", opts:[
+          "The border officer asked the captain how many crew there were on his ship.",
+          "The border officer asked the captain how many there were on his ship.",
+          "The border officer asked the captain how many crew there are on his ship.",
+          "The border officer asked the captain how many crew are there on his ship."
+        ], explain:"" },
+
+      { q: "We will have to report your case of violation to your captain.", opts:[
+          "Your case of violation will have to be reported to your captain.",
+          "Your case of violation will report to your captain.",
+          "Your case of violation will have to reported to your captain.",
+          "Your case of violation have to be reported to your captain."
+        ], explain:"" },
+
+      { q: "The border officer is checking the passenger’s papers.", opts:[
+          "The passenger’s papers are being checked by the border officer.",
+          "The passenger’s visa is checked by the border officer.",
+          "The passenger’s passport is being check by the border officer.",
+          "The passenger’s passport is checking by the border officer."
+        ], explain:"" },
+
+      { q: "The kidnapped woman is not allowed to contact her family on the entire trip.", opts:[
+          "The kidnapped woman mustn’t contact her family on the entire trip.",
+          "She must contact her family on the entire trip.",
+          "She need contacts her family on the entire trip.",
+          "She can contact her family on the entire trip."
+        ], explain:"" }, // END VÒNG 9 (Câu 90)
+
+      { q: "“Please, sign here!” the border officer said to the foreign tourist.", opts:[
+          "The border officer asked the foreign tourist to sign there.",
+          "The border officer had asked the foreigner to sign there.",
+          "The border officer asked the foreigner to sign here.",
+          "The border officer advised the foreigner to sign there."
+        ], explain:"" },
+
+      { q: "Border officers examine millions of passports every day to confirm the identity of the holders.", opts:[
+          "Millions of passports are examined by border officers every day to confirm the identity of the holders.",
+          "Millions of passports has been examined by border officers every day to confirm the identity of the holders",
+          "Millions of passports is examined by border officers every day to confirm the identity of the holders.",
+          "Millions of passports were examined by border officers every day to confirm the identity of the holders."
+        ], explain:"" },
+
+      { q: "“What is the purpose of your visit to Vietnam?” the border officer said to the foreigner.", opts:[
+          "The border officer asked the foreigner what the purpose of his/her visit to Vietnam was.",
+          "The border officer asked the foreigner what the purpose of his/her visit to Vietnam is.",
+          "The border officer asked the foreigner what is the purpose of his/her visit to Vietnam.",
+          "The border officer asked the foreigner what the purpose of his/her visit to Vietnam had been."
+        ], explain:"" },
+
+      { q: "At Lao Cai International Border Gate, Border Officers check thousands of passports every day.", opts:[
+          "Thousands of passports are checked at Lao Cai International Border Gate every day.",
+          "Thousands of passports is checked at Lao Cai International Border Gate every day.",
+          "Thousands of passports was checked at Lao Cai International Border Gate every day.",
+          "Thousands of passports were checked at Lao Cai International Border Gate every day."
+        ], explain:"" },
+
+      { q: "“Please, put all the items in your suitcase on the table” the border officer said to the traveller.", opts:[
+          "The border officer told the traveller to put all the items in his/her suitcase on the table.",
+          "The border officer told the traveller put all the items in his/her suitcase on the table.",
+          "The border officer told the traveller putting all the items in his/her suitcase on the table.",
+          "The border officer told the traveller to putting all the items in his/her suitcase on the table."
+        ], explain:"" },
+
+      { q: "“Please, listen to the minutes!” the border officer said to the passenger.", opts:[
+          "The border officer asked the passenger to listen to the minutes.",
+          "The border officer asked the passenger to listening the minutes.",
+          "The border officer asked the passenger listen to the minutes.",
+          "The border officer asked the passenger listening to the minutes."
+        ], explain:"" },
+
+      { q: "“Please, remind your crew members to bring along their passports and shorepasses when going ashore”, the border officer said to the captain.", opts:[
+          "The border officer asked the captain to remind his crew members to bring along their passports and shorepasses when going ashore.",
+          "The border officer reminded the captain to bring along their passports and shorepasses when going ashore.",
+          "The border officer asked if his crew members bring along their passports and shorepasses when going ashore.",
+          "The border officer asked the captain whether his crew members to bring along their passports and shorepasses when going ashore."
+        ], explain:"" },
+
+      { q: "You were deported from Viet Nam 5 months ago, so you are not allowed to enter Viet Nam for 3 years.", opts:[
+          "Because you were deported from Viet Nam 5 months ago, you are not allowed to enter Viet Nam for 3 years.",
+          "Although you were deported from Viet Nam 5 months ago, you are not allowed to enter Viet Nam for 3 years.",
+          "Since you are not allowed to enter Viet Nam for 3 years, you were deported from Viet Nam 5 months ago.",
+          "Because you are not allowed to enter Viet Nam for 3 years, you were deported from Viet Nam 5 months ago."
+        ], explain:"" },
+
+      { q: "If travellers have excessive amount of foreign currency at entry or exit, they have to declare at Customs and do as required.", opts:[
+          "It is obligatory for travellers to declare at Customs and do as required if they have excessive amount of foreign currency at entry or exit.",
+          "It is unnecessary travellers to declare at Customs and do as required if they have excessive amount of foreign currency at entry or exit.",
+          "Travellers can declare at Customs and do as required if they have excessive amount of foreign currency at entry or exit.",
+          "Travellers might not declare at Customs and do as required if they have excessive amount of foreign currency at entry or exit."
+        ], explain:"" },
+
+      { q: "Border officers had spent one month tracking and successfully cracked down on some drug dealers.", opts:[
+          "After having spent one month tracking, border officers successfully cracked down on some drug dealers.",
+          "Before having spent one month tracking, border officers successfully cracked down on some drug dealers.",
+          "Despite having spent one month tracking, border officers successfully cracked down on some drug dealers.",
+          "Because having spent one month tracking, border officers successfully cracked down on some drug dealers."
+        ], explain:"" } // END VÒNG 10 (Câu 100)
+    ];
+
+    // => questions length is 100
+
+    /************************************************************************
+     * CẬP NHẬT LOGIC VÒNG (10 vòng, 10 câu/vòng)
+     ************************************************************************/
+
+    const QUESTIONS_PER_ROUND = 10; // 10 câu/vòng
+    const TOTAL_ROUNDS = 10;        // 10 vòng
+    const TIME_PER_QUESTION = 90; // seconds
+
+    let globalIdx = 0; // 0..questions.length-1 (chỉ số câu hỏi hiện tại)
+    let currentRound = 1;
+    let roundStartIndex = 0; // Chỉ số câu hỏi đầu tiên của vòng hiện tại
+    let roundScore = 0;
+    let totalScore = 0;
+    let timer = null;
+    let timeLeft = TIME_PER_QUESTION;
+    let paused = false;
+
+    // NEW: LƯU LỊCH SỬ CHƠI (chỉ trong vòng hiện tại)
+    let roundHistory = []; 
+
+    // DOM Elements
+    const quizContent = document.getElementById('quizContent');
+    const startScreen = document.getElementById('startScreen');
+    const roundSelectionButtons = document.getElementById('roundSelectionButtons');
+    const selectRoundBtn = document.getElementById('selectRoundBtn');
+    
+    const questionText = document.getElementById('questionText');
+    const answersEl = document.getElementById('answers');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const timerFill = document.getElementById('timerFill');
+    const qProgress = document.getElementById('qProgress');
+    const roundNumEl = document.getElementById('roundNum');
+    const typeLabel = document.getElementById('typeLabel');
+    const roundBadge = document.getElementById('roundBadge');
+    const globalIndexEl = document.getElementById('globalIndex');
+    const roundScoreEl = document.getElementById('roundScore');
+    const totalScoreEl = document.getElementById('totalScore');
+    const roundSummary = document.getElementById('roundSummary');
+    const roundTitle = document.getElementById('roundTitle');
+    const roundDetail = document.getElementById('roundDetail');
+    const roundFinalScore = document.getElementById('roundFinalScore');
+    const totalFinalScore = document.getElementById('totalFinalScore');
+    const continueBtn = document.getElementById('continueBtn');
+    const cardEl = document.getElementById('card');
+    
+    // NEW REVIEW ELEMENTS
+    const reviewBtn = document.getElementById('reviewBtn');
+    const reviewScreen = document.getElementById('reviewScreen');
+    const reviewRoundNum = document.getElementById('reviewRoundNum');
+    const reviewList = document.getElementById('reviewList');
+    const closeReviewBtn = document.getElementById('closeReviewBtn');
+    
+    // --- DARK MODE LOGIC START ---
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const htmlEl = document.documentElement; 
+
+    function setTheme(theme){
+      htmlEl.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      darkModeToggle.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+    }
+
+    darkModeToggle.addEventListener('click', ()=>{
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+    });
+
+    function loadTheme(){
+      const savedTheme = localStorage.getItem('theme');
+      if(savedTheme){
+        setTheme(savedTheme);
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        setTheme('dark');
+      } else {
+        setTheme('light'); 
+      }
+    }
+    // --- DARK MODE LOGIC END ---
+
+
+    // utility shuffle for options only
+    function shuffleArray(a){
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+      }
+      return a;
+    }
+
+    // heuristic explanation generator (same as earlier, basic)
+    function generateExplanation(item){
+      const text = item.q.toLowerCase();
+      const correct = item.opts[0];
+      if(text.includes('asked') || text.includes('"') || text.match(/\basked\b|\bsaid\b/)){
+        return `Reported speech / tường thuật: cần thay đổi thì/đại từ/word order. Câu đúng: "${correct}"`;
+      }
+      if(text.includes('too') && text.includes('to')){
+        return `Cấu trúc "too...to". Câu đúng giữ cấu trúc này. Câu đúng: "${correct}"`;
+      }
+      if(text.includes('most')||text.includes('best')||text.includes('more')){
+        return `So sánh: chọn câu tương đương về ý và cấu trúc. Câu đúng: "${correct}"`;
+      }
+      if(text.includes('passive') || text.includes('is being') || text.includes('are being') || text.includes('was built') || text.includes('were built')){
+        return `Thể bị động (passive voice). Câu đúng dùng passive phù hợp. Câu đúng: "${correct}"`;
+      }
+      if(text.includes('if') || text.includes('would')){
+        return `Câu điều kiện (conditional). Câu đúng là paraphrase/chuyển đổi ngữ pháp chính xác. Câu đúng: "${correct}"`;
+      }
+      return `Đáp án đúng: "${correct}". Giải thích ngắn: đây là paraphrase/chuyển đổi ngữ pháp chính xác.`;
+    }
+
+    // render question at globalIdx
+    function renderQuestion(){
+      // hide round summary if visible, hide final result if present
+      roundSummary.style.display = 'none';
+      cardEl.style.display = 'block'; // Ensure card is visible
+      const finalResultEl = document.querySelector('.overlay-screen.final-result');
+      if(finalResultEl) finalResultEl.remove();
+
+      const item = questions[globalIdx];
+      // Check if the question is already answered in the current round
+      const historyItem = roundHistory.find(h => h.globalIndex === globalIdx);
+
+      questionText.textContent = item.q;
+      answersEl.innerHTML = '';
+      feedbackArea.innerHTML = '';
+      nextBtn.disabled = true;
+      skipBtn.disabled = false;
+      pauseBtn.disabled = false;
+      
+      // show progress within round
+      const localIndex = (globalIdx % QUESTIONS_PER_ROUND) + 1; // 1-10
+      qProgress.textContent = `${localIndex}/${QUESTIONS_PER_ROUND}`;
+      roundNumEl.textContent = `${currentRound}/${TOTAL_ROUNDS}`;
+      globalIndexEl.textContent = globalIdx + 1;
+      roundBadge.textContent = `Vòng ${currentRound}`;
+      typeLabel.textContent = (globalIdx < 60) ? "Type 1" : "Type 2";
+
+      // prepare options: map origIndex
+      const optObjs = item.opts.map((t,i)=>({text:t, orig:i}));
+      shuffleArray(optObjs);
+      
+      const isAnswered = historyItem && historyItem.answered;
+
+      optObjs.forEach((o, idx)=>{
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerHTML = `<div class="label">${String.fromCharCode(65+idx)}</div><div style="flex:1"><div style="font-weight:700">${o.text}</div></div>`;
+        btn.dataset.orig = o.orig;
+        
+        if (isAnswered) {
+            // Re-render state for review
+            btn.disabled = true;
+            if (o.orig === 0) {
+                btn.classList.add('correct');
+            } else if (idx === historyItem.chosenOptionIndex) {
+                btn.classList.add('wrong');
+            }
+        } else {
+            // Only attach handler if not answered
+            btn.onclick = ()=> handleAnswer(btn, o, idx); 
+        }
+        answersEl.appendChild(btn);
+      });
+
+      if (isAnswered) {
+          // Show feedback for answered question immediately
+          showFeedback(historyItem.isCorrect, {text: historyItem.chosenAnswerText, orig: historyItem.chosenOptionOrig}, historyItem.chosenOptionOrig === -1);
+          stopTimer();
+          nextBtn.disabled = false;
+          skipBtn.disabled = true;
+          pauseBtn.disabled = true; // Disable pause/skip when reviewing old question
+      } else {
+          resetTimer();
+          startTimer();
+      }
+    }
+
+    // handle answer click
+    function handleAnswer(btn, optObj, chosenOptionIndex){
+      // disable all
+      Array.from(answersEl.children).forEach(b=>b.disabled=true);
+      stopTimer();
+
+      const isCorrect = (optObj.orig === 0);
+      
+      // NEW: RECORD HISTORY
+      let historyItem = roundHistory.find(h => h.globalIndex === globalIdx);
+
+      if (!historyItem) {
+          historyItem = {
+              globalIndex: globalIdx,
+              qText: questions[globalIdx].q,
+              answered: true,
+              isCorrect: isCorrect,
+              chosenOptionOrig: optObj.orig,
+              chosenAnswerText: optObj.text,
+              chosenOptionIndex: chosenOptionIndex,
+              wasScored: false // Flag to ensure score is only counted once per question in a round instance
+          };
+          roundHistory.push(historyItem);
+      } 
+      
+      // Score update (only score if not scored before)
+      if(isCorrect){
+          btn.classList.add('correct');
+          if (historyItem.wasScored !== true) { 
+              roundScore++; totalScore++;
+              historyItem.wasScored = true; 
+          }
+          roundScoreEl.textContent = roundScore;
+          totalScoreEl.textContent = totalScore;
+      } else {
+          btn.classList.add('wrong');
+          const correctBtn = Array.from(answersEl.children).find(b=>b.dataset.orig === "0");
+          if(correctBtn) correctBtn.classList.add('correct');
+          historyItem.wasScored = true; // Mark as scored (wrong) to prevent point addition on re-answer
+      }
+
+      showFeedback(isCorrect, optObj, false);
+      nextBtn.disabled = false;
+      skipBtn.disabled = true;
+    }
+
+    function showFeedback(isCorrect, chosenOpt, isTimeUpOrSkip){
+      feedbackArea.innerHTML = '';
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      const title = document.createElement('div');
+      title.className = 'title';
+      
+      if (isTimeUpOrSkip) {
+          title.textContent = chosenOpt.orig === -1 ? 'Hết thời gian ⏱ — Sai' : 'Bỏ qua ⏭ — Sai';
+      } else {
+          title.textContent = isCorrect ? 'Đúng ✓' : 'Sai ✕';
+      }
+      
+      fb.appendChild(title);
+
+      const explanation = (questions[globalIdx].explain && questions[globalIdx].explain.trim().length>0) ? questions[globalIdx].explain : generateExplanation(questions[globalIdx]);
+      const rule = document.createElement('div');
+      rule.className = 'rule';
+      rule.innerHTML = explanation;
+      fb.appendChild(rule);
+
+      const more = document.createElement('div');
+      more.className = 'explain-full';
+      if (isTimeUpOrSkip) {
+          more.innerHTML = `<strong>Đáp án đúng:</strong> ${questions[globalIdx].opts[0]}`;
+      } else {
+          more.innerHTML = `<strong>Đáp án bạn chọn:</strong> ${chosenOpt.text}<br/><strong>Đáp án đúng:</strong> ${questions[globalIdx].opts[0]}`;
+      }
+      fb.appendChild(more);
+
+      feedbackArea.appendChild(fb);
+    }
+
+    // Timer logic
+    function startTimer(){
+      timeLeft = TIME_PER_QUESTION;
+      updateTimerUI();
+      stopTimer(); // ensure no duplicate
+      timer = setInterval(()=>{
+        if(!paused){
+          timeLeft--;
+          updateTimerUI();
+          if(timeLeft <= 0){
+            clearInterval(timer);
+            handleTimeUp();
+          }
+        }
+      }, 1000);
+    }
+    function stopTimer(){
+      if(timer) { clearInterval(timer); timer = null; }
+    }
+    function resetTimer(){
+      stopTimer();
+      timeLeft = TIME_PER_QUESTION;
+      updateTimerUI();
+    }
+    function updateTimerUI(){
+      timeDisplay.textContent = `${timeLeft}s`;
+      const pct = Math.max(0, (timeLeft / TIME_PER_QUESTION) * 100);
+      timerFill.style.width = pct + "%";
+      // color hint when low time
+      if(timeLeft <= 10){
+        timerFill.style.filter = "drop-shadow(0 4px 12px rgba(211, 47, 47, 0.25))"; /* Red shadow for low time */
+      } else {
+        timerFill.style.filter = "none";
+      }
+    }
+    function handleTimeUp(){
+      // auto mark as wrong, reveal correct
+      Array.from(answersEl.children).forEach(b=>b.disabled=true);
+      const correctBtn = Array.from(answersEl.children).find(b=>b.dataset.orig === "0");
+      if(correctBtn) correctBtn.classList.add('correct');
+      
+      // NEW: RECORD HISTORY (as wrong/skipped)
+      let historyItem = roundHistory.find(h => h.globalIndex === globalIdx);
+
+      if (!historyItem) {
+          historyItem = {
+              globalIndex: globalIdx,
+              qText: questions[globalIdx].q,
+              answered: true,
+              isCorrect: false, // Time up is always incorrect
+              chosenOptionOrig: -1, // No choice / Time up marker
+              chosenAnswerText: "Hết giờ",
+              chosenOptionIndex: -1,
+              wasScored: true
+          };
+          roundHistory.push(historyItem);
+      }
+      
+      // show feedback: counted as wrong (no point)
+      showFeedback(false, {orig: -1}, true); // Use -1 as time-up marker
+      nextBtn.disabled = false;
+      skipBtn.disabled = true;
+    }
+
+    // Next question / round management
+    nextBtn.addEventListener('click', goToNext);
+
+    function goToNext(){
+        stopTimer();
+        
+        // Tăng chỉ số câu hỏi hiện tại
+        globalIdx++;
+        
+        // Kiểm tra xem đã kết thúc 1 vòng chưa (tại chỉ số 10, 20, ..., 100)
+        if(globalIdx > 0 && globalIdx % QUESTIONS_PER_ROUND === 0 && globalIdx <= questions.length){
+            // Đã hoàn thành câu cuối cùng của vòng (e.g., globalIdx = 10, 20, 90)
+            
+            // QUAN TRỌNG: Giảm globalIdx trở lại câu cuối cùng của vòng
+            // E.g., globalIdx 11 (bị tăng) -> 10 (đúng câu cuối của Vòng 1)
+            globalIdx--; 
+            showRoundSummary();
+            return;
+        } 
+        
+        // Check if we are past the very last question (globalIdx = 100 sau khi câu 99 đã làm và bấm next)
+        if(globalIdx >= questions.length){
+            showFinalResult();
+            return;
+        }
+        
+        // Nếu không phải là câu cuối vòng, chỉ cần render câu tiếp theo
+        renderQuestion();
+    }
+
+    // Skip button marks as wrong immediately and reveals answer
+    skipBtn.addEventListener('click', ()=>{
+      stopTimer();
+      
+      // Mark as wrong, do not add score
+      Array.from(answersEl.children).forEach(b=>b.disabled=true);
+      const correctBtn = Array.from(answersEl.children).find(b=>b.dataset.orig === "0");
+      if(correctBtn) correctBtn.classList.add('correct');
+      
+      // NEW: RECORD HISTORY (as skipped)
+      let historyItem = roundHistory.find(h => h.globalIndex === globalIdx);
+
+      if (!historyItem) {
+          historyItem = {
+              globalIndex: globalIdx,
+              qText: questions[globalIdx].q,
+              answered: true,
+              isCorrect: false, // Skip is always incorrect
+              chosenOptionOrig: -2, // Skipped marker
+              chosenAnswerText: "Bỏ qua",
+              chosenOptionIndex: -2,
+              wasScored: true
+          };
+          roundHistory.push(historyItem);
+      }
+      
+      // Show feedback
+      showFeedback(false, {orig: -2}, true); // Use -2 as skip marker
+      nextBtn.disabled = false;
+      skipBtn.disabled = true;
+    });
+
+    // Pause/resume
+    pauseBtn.addEventListener('click', ()=>{
+      paused = !paused;
+      pauseBtn.textContent = paused ? '▶ Tiếp tục' : '⏸ Tạm dừng';
+      if(!paused && timeLeft > 0) startTimer();
+      if(paused) stopTimer();
+    });
+
+    // Restart current round: reset globalIdx to round start
+    restartBtn.addEventListener('click', ()=>{
+      if(confirm(`Bạn muốn làm lại VÒNG ${currentRound} (10 câu)? Điểm vòng sẽ được đặt lại.`)) {
+        const roundStart = (currentRound-1) * QUESTIONS_PER_ROUND;
+        
+        // Cập nhật Total Score: chỉ trừ đi số điểm có được trong vòng này
+        totalScore -= roundScore;
+        
+        globalIdx = roundStart;
+        roundStartIndex = roundStart;
+        roundScore = 0;
+        roundHistory = []; // RESET HISTORY CỦA VÒNG
+        
+        roundScoreEl.textContent = roundScore;
+        totalScoreEl.textContent = totalScore;
+        renderQuestion();
+      }
+    });
+
+    // Show round summary
+    function showRoundSummary(){
+      stopTimer();
+      
+      // Cập nhật Vòng hiện tại (vì globalIdx là câu cuối của vòng)
+      currentRound = Math.floor(globalIdx / QUESTIONS_PER_ROUND) + 1;
+      
+      // compute round start and end
+      const startIdx = (currentRound-1) * QUESTIONS_PER_ROUND;
+      const endIdx = startIdx + QUESTIONS_PER_ROUND - 1; 
+      
+      roundTitle.textContent = `Vòng ${currentRound} kết thúc`;
+      roundDetail.innerHTML = `Câu ${startIdx+1} → ${endIdx+1} hoàn tất.`;
+      roundFinalScore.textContent = roundScore;
+      totalFinalScore.textContent = totalScore;
+      roundSummary.style.display = 'flex';
+      
+      // update big indicators
+      roundScoreEl.textContent = roundScore;
+      totalScoreEl.textContent = totalScore;
+      
+      // Check if last round finished (Vòng 10 / câu 100)
+      if(currentRound >= TOTAL_ROUNDS || endIdx >= questions.length-1){
+        continueBtn.textContent = 'Xem kết quả tổng 💯';
+        continueBtn.onclick = showFinalResult;
+      } else {
+        continueBtn.textContent = 'Bắt đầu vòng tiếp theo ▶';
+        continueBtn.onclick = startNextRound;
+      }
+    }
+
+    function startNextRound(){
+        // *QUAN TRỌNG: Tăng globalIdx lên 1 để nhảy sang câu đầu tiên của vòng tiếp theo
+        globalIdx++; // e.g., đang ở câu 10 (idx=9), globalIdx thành 10 (idx=10, câu 11)
+        
+        // Cập nhật Vòng mới
+        currentRound++; 
+        roundStartIndex = globalIdx;
+        roundScore = 0; // Reset score cho vòng mới
+        roundHistory = []; // Reset history cho vòng mới
+        
+        roundSummary.style.display = 'none';
+        renderQuestion();
+    }
+
+    function showFinalResult(){
+      stopTimer();
+      // Ensure quiz content is hidden
+      quizContent.style.display = 'none'; 
+      roundSummary.style.display = 'none';
+      
+      // Remove any previous final result element
+      const container = document.querySelector('.container');
+      const existingResult = document.querySelector('.overlay-screen.final-result');
+      if (existingResult) existingResult.remove();
+      
+      const resultEl = document.createElement('div');
+      resultEl.className = 'overlay-screen final-result';
+      resultEl.innerHTML = `<div class="content">
+        <div class="title" style="font-size:24px; color:var(--accent); margin-bottom:15px; font-weight:900;">🎉 HOÀN TẤT BÀI QUIZ 100 CÂU!</div>
+        <div style="font-size:18px; margin-bottom:15px;">
+          Bạn đã hoàn thành **tổng cộng ${questions.length} câu hỏi** qua ${TOTAL_ROUNDS} vòng.
+        </div>
+        <div class="explain-full" style="margin-top:20px; font-size:22px; text-align:center; padding:20px; background:var(--glass);">
+          Tổng điểm cuối cùng của bạn là: 
+          <strong style="font-size:36px; color:var(--ok); display:block; margin:5px 0;">${totalScore}/${questions.length}</strong>
+          (${Math.round(totalScore/questions.length*100)}% chính xác)
+        </div>
+        <div style="margin-top:25px; text-align:center;">
+          <button class="action" onclick="location.reload()" style="font-size:16px; margin-right:10px;">🔁 Làm lại từ đầu</button>
+          <button class="ghost" onclick="showStartScreen()" style="font-size:16px;">🎯 Chọn Vòng Khác</button>
+        </div>
+      </div>`;
+
+      container.appendChild(resultEl);
+    }
+    
+    /************************************************************************
+     * CHỨC NĂNG CHỌN VÒNG VÀ REVIEW
+     ************************************************************************/
+    
+    // Generate Round Selection Buttons
+    function generateRoundSelection() {
+        roundSelectionButtons.innerHTML = '';
+        for (let r = 1; r <= TOTAL_ROUNDS; r++) {
+            const btn = document.createElement('button');
+            const startQ = (r - 1) * QUESTIONS_PER_ROUND + 1;
+            const endQ = r * QUESTIONS_PER_ROUND;
+            btn.className = 'round-btn';
+            btn.textContent = `Vòng ${r}`;
+            btn.title = `Câu ${startQ} - ${endQ}`;
+            btn.onclick = () => startGame(r);
+            roundSelectionButtons.appendChild(btn);
+        }
+    }
+
+    // Start Game from selected round
+    function startGame(selectedRound) {
+        if (selectedRound < 1 || selectedRound > TOTAL_ROUNDS) return;
+        
+        stopTimer(); // ensure no running timers
+        
+        // Reset state for a fresh start from the selected round
+        totalScore = 0; 
+        roundScore = 0;
+        roundHistory = []; // RESET HISTORY
+        
+        currentRound = selectedRound;
+        roundStartIndex = (currentRound - 1) * QUESTIONS_PER_ROUND;
+        globalIdx = roundStartIndex;
+        
+        // Update display
+        roundScoreEl.textContent = 0;
+        totalScoreEl.textContent = 0;
+        
+        // Show Quiz and hide Start Screen
+        startScreen.style.display = 'none';
+        reviewScreen.style.display = 'none';
+        quizContent.style.display = 'block';
+        
+        // Render the first question of the selected round
+        renderQuestion();
+    }
+    
+    // Event listener for 'Select Other Round' button
+    selectRoundBtn.addEventListener('click', showStartScreen);
+    
+    // Show Start Screen (for initial load or 'Select Other Round' button)
+    function showStartScreen() {
+        stopTimer();
+        paused = false;
+        
+        // Hide quiz and show start screen
+        quizContent.style.display = 'none';
+        reviewScreen.style.display = 'none';
+        startScreen.style.display = 'flex';
+        
+        // Remove final result screen if present
+        const finalResultEl = document.querySelector('.overlay-screen.final-result');
+        if(finalResultEl) finalResultEl.remove();
+        
+        // Re-generate buttons in case
+        generateRoundSelection();
+    }
+    
+    // Review Button Logic
+    reviewBtn.addEventListener('click', showReviewScreen);
+    closeReviewBtn.addEventListener('click', hideReviewScreen);
+
+    function showReviewScreen() {
+        stopTimer();
+        paused = true; // Pause game while reviewing
+        pauseBtn.textContent = '▶ Tiếp tục'; 
+        
+        quizContent.style.display = 'none';
+        reviewScreen.style.display = 'flex';
+        reviewRoundNum.textContent = currentRound;
+        reviewList.innerHTML = '';
+        
+        const startIdx = (currentRound - 1) * QUESTIONS_PER_ROUND;
+        const endIdx = startIdx + QUESTIONS_PER_ROUND;
+
+        for (let i = startIdx; i < endIdx; i++) {
+            const historyItem = roundHistory.find(h => h.globalIndex === i);
+            const itemEl = document.createElement('div');
+            
+            let statusClass = 'unanswered';
+            let statusIcon = '?';
+            let statusText = 'Chưa làm';
+            
+            if (historyItem) {
+                if (historyItem.isCorrect) {
+                    statusClass = 'correct';
+                    statusIcon = '✓';
+                    statusText = 'Đúng';
+                } else if (historyItem.chosenOptionOrig === -1) {
+                    statusClass = 'skipped';
+                    statusIcon = '⏱';
+                    statusText = 'Hết giờ';
+                } else if (historyItem.chosenOptionOrig === -2) {
+                    statusClass = 'skipped';
+                    statusIcon = '⏭';
+                    statusText = 'Bỏ qua';
+                } else {
+                    statusClass = 'wrong';
+                    statusIcon = '✕';
+                    statusText = 'Sai';
+                }
+            }
+            
+            itemEl.className = `review-item ${statusClass}`;
+            itemEl.dataset.qindex = i;
+            itemEl.innerHTML = `
+                <div class="status-icon">${statusIcon}</div>
+                <div class="q-title">Câu ${i + 1} (${statusText}): ${questions[i].q}</div>
+            `;
+            
+            // Add click listener to jump to question
+            itemEl.onclick = () => jumpToQuestion(i);
+            
+            reviewList.appendChild(itemEl);
+        }
+    }
+
+    function hideReviewScreen() {
+        reviewScreen.style.display = 'none';
+        quizContent.style.display = 'block';
+        
+        // Unpause game if it was running (i.e. not end of round, and time > 0, and current question is unanswered)
+        const historyItem = roundHistory.find(h => h.globalIndex === globalIdx);
+        if (timeLeft > 0 && nextBtn.disabled === true && !historyItem) {
+            paused = false;
+            pauseBtn.textContent = '⏸ Tạm dừng';
+            startTimer(); 
+        } else if (nextBtn.disabled === true && historyItem) {
+            // If current question is answered, keep controls disabled
+            pauseBtn.disabled = true;
+            skipBtn.disabled = true;
+        }
+    }
+
+    function jumpToQuestion(index) {
+        // Check if the target question is in the current round
+        if (index < roundStartIndex || index >= roundStartIndex + QUESTIONS_PER_ROUND) {
+             alert('Câu hỏi này nằm ngoài vòng hiện tại.');
+             return;
+        }
+
+        globalIdx = index;
+        hideReviewScreen();
+        renderQuestion();
+    }
+
+
+    // initialize
+    function init(){
+      if(questions.length < 1) {
+        questionText.textContent = 'Chưa có câu hỏi. Vui lòng thêm câu vào mảng questions trong mã.';
+        return;
+      }
+      
+      loadTheme();
+      showStartScreen(); // Start by showing the selection screen
+    }
+
+    // keyboard shortcuts: A-D to pick, N next, P pause, R restart
+    document.addEventListener('keydown', (e)=>{
+      // Only process keys if the quiz content is visible (game is running)
+      if (quizContent.style.display === 'block') {
+        const key = e.key.toLowerCase();
+        if(['a','b','c','d'].includes(key)){
+          const btns = Array.from(answersEl.children);
+          const idxMap = {'a':0,'b':1,'c':2,'d':3};
+          const btn = btns[idxMap[key]];
+          if(btn && !btn.disabled) btn.click();
+        } else if(key === 'n'){
+          if(!nextBtn.disabled) nextBtn.click();
+        } else if(key === 'r'){
+          restartBtn.click();
+        } else if(key === 'p'){
+          pauseBtn.click();
+        } else if(key === 's'){
+          if(!skipBtn.disabled) skipBtn.click();
+        }
+      }
+    });
+
+    // start
+    init();
+
+  </script>
+</body>
+</html>
